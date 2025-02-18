@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/src/GpuFFT", // Укажите путь к вашему исполняемому файлу
+            // "args": [],
+            // "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            // "environment": [],
+            // "externalConsole": false,
+            // "MIMode": "gdb",
+            "preLaunchTask": "build", // Задача для сборки перед запуском
+            "miDebuggerPath": "/usr/bin/gdb", // Укажите путь к gdb
+            "setupCommands": [
+                {
+                    "description": "Включить pretty-printing для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}

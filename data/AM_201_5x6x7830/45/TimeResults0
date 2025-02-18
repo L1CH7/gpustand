@@ -1,0 +1,13 @@
+write data
+    start:  0 ms
+    end:    0 ms
+       execution duration: 0 ms
+fft
+    start:  1.35101e+08 ms
+    end:    1.35101e+08 ms
+       execution duration: 4e-05 ms
+read data
+    start:  1.35101e+08 ms
+    end:    1.35101e+08 ms
+       execution duration: 4e-05 ms
+FFT full execution time: 1.35101e+08
