@@ -1,5 +1,5 @@
-#ifndef READWRITEFUNCTIONS_H
-#define READWRITEFUNCTIONS_H
+#ifndef READ_WRITE_FUNCTIONS_H__
+#define READ_WRITE_FUNCTIONS_H__
 
 #include <iostream>
 #include <vector>
@@ -14,7 +14,8 @@ using json = nlohmann::json;
 FftParams
 readJsonParams(const std::string &filename);
 
-
+// Methods to convert std::complex from/to nlohmann::json
+// It is necessary to write them in corresponding namespace - std
 namespace std
 {
     template< typename T >
@@ -32,7 +33,6 @@ namespace std
     }
 }
 
-
 template< typename T >
 void 
 writeVectorToJsonFile( const std::string & filename, const std::vector< T > & arr )
@@ -42,80 +42,19 @@ writeVectorToJsonFile( const std::string & filename, const std::vector< T > & ar
     ofs << j.dump(4);
 }
 
-// #define PREPARE_DATA
-
 template< typename T >
 std::vector< T >
-#ifdef PREPARE_DATA
-readVectorFromJsonFile( const std::string & filename, size_t kgd, size_t samples_num )
-#else
 readVectorFromJsonFile( const std::string & filename )
-#endif
 {
     json j;
     std::ifstream ifs( filename );
-    // std::cout << __PRETTY_FUNCTION__ << "DEBUG\n";
     ifs >> j;
-#ifdef PREPARE_DATA  
-    std::vector< T >    v_in( j ),
-                        v_out( samples_num );
-    // std::vector< T >::iterator 
-    auto in_it = v_in.begin(), out_it = v_out.begin();
-    bool data_end_flag = false; // true if reached end of source data. elements in out data must be zeroes
-    for(; out_it != v_out.end(); ++out_it )
-    {
-        if( data_end_flag )
-            *out_it = 0;
-        else
-            for( size_t d = 0; d < kgd && !data_end_flag; ++d, ++in_it )
-            {
-                if( in_it != v_in.end() )
-                    *out_it += *in_it;
-                else
-                    data_end_flag = true;
-            }
-    }
-    return v_out;
-#else
     return std::vector< T >( j );
-#endif
 }
-
-
-
-std::vector<int>
-readTfpMSeqSignsFile(
-    std::string fileName);
-
-void
-writeResultToUniteFile(
-    std::string fileName,
-    int polar,
-    std::complex<float>* mas,
-    int nl,
-    int kgd,
-    int kgrs);
-
-void
-writeResultToUniteFile(
-    std::string fileName,
-    int polar,
-    cl_float2* mas,
-    int nl,
-    int kgd,
-    int kgrs);
 
 void
 writeTimeToFile(
     std::string fileName,
-    TimeResult result,
-    int polarNumber);
+    TimeResult result);
 
-std::vector<std::complex<int>>
-readDataFile(std::string fileName);
-
-FftParams
-readInParams(const std::string &filename);
-
-#endif // READWRITEFUNCTIONS_H
-
+#endif // READ_WRITE_FUNCTIONS_H__

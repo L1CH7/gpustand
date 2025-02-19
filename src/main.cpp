@@ -19,8 +19,8 @@ void AmTest()
     params.shgd *= params.ndec;
     params.is_am = true;
     params.log2N = params.is_am 
-        ? (uint32_t)std::log2(params.true_nihs) + 1 
-        : (uint32_t)std::ceil(std::log2((double)params.dlstr/params.ndec));
+        ? ( uint32_t )std::log2( params.true_nihs ) + 1 
+        : ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
 
     // Read input vector nd cast it to cl_int2
     auto input = readVectorFromJsonFile< std::complex< int > >( DATA_FILE );
@@ -37,7 +37,9 @@ void AmTest()
     std::vector< std::complex< float > > resv( res_complex_ptr, res_complex_ptr + res_size );
 
     writeVectorToJsonFile( RESULT_FILE, resv );
-    writeTimeToFile( RESULT_TIME, times, 0 );
+    writeTimeToFile( RESULT_TIME, times );
+
+    delete handler;
 }
 
 int main()

@@ -1,8 +1,5 @@
 #include "GpuInit.h"
 #include <error.h>
-// #include <gpu/GpuInit.h>
-// #include <gpu/ProgramHandler.h>
-// #include <CLDefs.h>
 
 DeviceIdentity initGpuModule(
     ProgramHandler * handler,
@@ -10,13 +7,10 @@ DeviceIdentity initGpuModule(
 )
 {
     std::cout << "--> " << __func__ << "("
-        //  << platform_id << ", "
-        //  << device_id << ", "
          << "\"" << kernel_file << "\")"
          << std::endl;
     try
     {
-    // std::cout << "maked?handler->" << *handler << std::endl;
         if( handler )
         {
             handler->initializeDeviceWithKernelFile(kernel_file);
@@ -28,7 +22,6 @@ DeviceIdentity initGpuModule(
             };
         }
         PRINT_ERROR("No handler created");
-        // std::cerr << "No handler created: " << std::endl;
         return{};
     }
     catch (cl::Error err) {

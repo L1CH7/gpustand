@@ -1,5 +1,5 @@
-#ifndef __PROGRAM_HANDLER_H
-#define __PROGRAM_HANDLER_H
+#ifndef PROGRAM_HANDLER_H__
+#define PROGRAM_HANDLER_H__
 
 
 #include <fstream>
@@ -29,4 +29,4 @@ struct ProgramHandler
 ProgramHandler * 
 makeProgramHandler( size_t platform_num, size_t device_num, std::string & error );
 
-#endif // __PROGRAM_HANDLER_H
+#endif // PROGRAM_HANDLER_H__

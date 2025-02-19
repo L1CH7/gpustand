@@ -1,5 +1,4 @@
 #include "ProgramHandler.h"
-// #include <CLDefs.h>
 
 ProgramHandler::ProgramHandler( cl::Platform * plat, cl::Device * dev )
 :   platform( plat ),

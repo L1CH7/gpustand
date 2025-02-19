@@ -33,62 +33,12 @@ readJsonParams( const std::string & filename )
     return FftParams(j);
 }
 
-
-
-// Safely delete; use readVectorFromJsonFile instead
-// std::vector<int>
-// readTfpMSeqSignsFile(
-//     std::string fileName)
-// {
-//     std::ifstream tfpMSeqSignsFile(fileName);
-//     std::vector<int> signArray;
-//     if (!tfpMSeqSignsFile.is_open()) {
-//         std::cerr << "Sign file not opened" << std::endl;
-//         return signArray;
-//     }
-//     int seqSign;
-//     while (tfpMSeqSignsFile >> seqSign)
-//         signArray.push_back(seqSign);
-//     tfpMSeqSignsFile.close();
-//     return signArray;
-// }
-
-void
-writeResultToUniteFile(
-    std::string fileName,
-    int polar,
-    std::complex<float>* mas,
-    int nl,
-    int kgd,
-    int kgrs)
-{
-    std::string file = fileName + "Polar" + std::to_string(polar);
-    std::ofstream ofs(file, std::ios::trunc);
-    if (!ofs.is_open()) {
-        std::cerr << "Result file not opened" << std::endl;
-        return;
-    }
-    ofs << "Nl: " << nl << "\n";
-    ofs << "kgd: " << kgd << "\n";
-    ofs << "kgrs: " << kgrs << "\n";
-    for (int j = 0; j < nl; j++) {
-        for (int i = 0; i < kgd*kgrs; i++) {
-            ofs << "(" << mas[i + j*kgd*kgrs].real() << ","
-                    << mas[i + j*kgd*kgrs].imag() << ") ";
-            if (i % kgrs == (kgrs-1))
-                ofs << "\n";
-        }
-    }
-    ofs.close();
-}
-
 void
 writeTimeToFile(
     std::string fileName,
-    TimeResult result,
-    int polarNumber)
+    TimeResult result)
 {
-    std::string file = fileName;// + "TimeResults" + std::to_string(polarNumber);
+    std::string file = fileName;
     std::ofstream ofs(file, std::ios::trunc);
     if (!ofs.is_open()) {
         std::cerr << "TimeResult file not opened" << std::endl;

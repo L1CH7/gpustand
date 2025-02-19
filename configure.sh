@@ -1,15 +1,4 @@
-# #!/bin/bash
-
-# BUILD_DIR="build"
-
-# mkdir -p "$BUILD_DIR"
-
-# cmake -S . -B "$BUILD_DIR"
-# make -C "$BUILD_DIR" -j12
 #!/bin/bash
-
-# # Setup stderr coloring red
-# command 2> >(sed $'s,.*,\e[31m&\e[m,'>&2)
 
 fullpath="$(dirname $(readlink -f $0))"
 
