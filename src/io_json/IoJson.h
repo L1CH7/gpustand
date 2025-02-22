@@ -5,8 +5,6 @@
 #include <vector>
 #include <complex>
 #include <fstream>
-// #include <boost/filesystem/fstream.hpp>
-// #include <boost/filesystem/operations.hpp>
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -46,15 +44,16 @@ writeVectorToJsonFile( const fs::path & filepath, const std::vector< T > & arr )
     json j( arr );
     std::ofstream ofs( filepath );
     ofs << j.dump( 4 );
+    ofs.close();
 }
 
 template< typename T >
 std::vector< T >
 readVectorFromJsonFile( const fs::path & filepath )
 {
-    json j;
     std::ifstream ifs( filepath );
-    ifs >> j;
+    json j = json::parse( ifs );
+    ifs.close();
     return std::vector< T >( j["polar0"] );
 }
 
@@ -62,9 +61,9 @@ template< typename T >
 std::pair< std::vector< T >, std::vector< T > >
 readVectorFromJsonFile_2Polars( const fs::path & filepath )
 {
-    json j;
     std::ifstream ifs( filepath );
-    ifs >> j;
+    json j = json::parse( ifs );
+    ifs.close();
     std::vector< T > polar0( j["polar0"] ), polar1( j["polar1"] );
 
     return std::make_pair( polar0, polar1 );

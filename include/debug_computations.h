@@ -4,14 +4,14 @@
 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
 
-#include <ReadWriteFunctions.h>
+#include <IoJson.h>
     template< typename Buffer_Tp, typename Vector_Tp >
     void
     writeBufferToJsonFile( const std::string & filename, cl::CommandQueue & queue, cl::Buffer & buffer, size_t buffer_size )
     {
         assert( sizeof( Buffer_Tp ) == sizeof( Vector_Tp ) && "Equality of type sizes" );
 
-        std::vector< Vector_Tp > out(buffer_size);
+        std::vector< Vector_Tp > out( buffer_size );
         auto t_out = reinterpret_cast< Buffer_Tp * >( out.data() );
         queue.enqueueReadBuffer(
             buffer, CL_TRUE, 0,

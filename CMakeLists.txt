@@ -31,23 +31,3 @@ configure_file(
 )
 
 add_subdirectory(src)
-
-# add_executable(GpuFFT
-#     main.cpp
-#     opencl_help.h
-#     ReadWriteFunctions.h ReadWriteFunctions.cpp
-#     GpuFunctions.h GpuFunctions.cpp
-#     GpuKernels.cl
-# )
-
-# add_library(
-#     ocla
-#     ocla.cpp
-#     GpuFunctions.cpp)
-
-# target_link_libraries(${PROJECT_NAME} PRIVATE ocla)
-
-
-
-# target_link_libraries(${PROJECT_NAME} PRIVATE OpenCL::OpenCL)
-# target_link_libraries(ocla PRIVATE OpenCL::OpenCL)

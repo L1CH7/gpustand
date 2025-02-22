@@ -28,8 +28,7 @@ readJsonParams( const fs::path & filepath )
         std::cerr << "Param file not opened" << std::endl;
         return params;
     }
-    json j;
-    ifs >> j;
+    json j = json::parse( ifs );
     ifs.close();
     return FftParams(j);
 }
@@ -84,5 +83,6 @@ writeTimeToFile( const fs::path & filepath, TimeResult result )
             << "\texecution duration:\t"
             << ((double)result.readEnd - result.readStart) / 1000000 << " ms\n";
     ofs << "FFT full execution time: " << funclength << std::endl;
+    ofs.close();
 }
 

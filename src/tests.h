@@ -32,7 +32,10 @@ void TestTemplateLanin( const Paths & paths, ProgramHandler * handler )
     else
     {
         params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
-        params.mseq = readVectorFromJsonFile< int >( paths.mseq_path );
+        json j;
+        std::ifstream ifs( paths.mseq_path );
+        ifs >> j;
+        params.mseq = std::vector< int >( j );
     }
 
     // Read input vector nd cast it to cl_int2
@@ -95,7 +98,7 @@ void RunTestsSingleThread( ProgramHandler * handler )
 
         auto identity = initGpuModule( handler, paths.kernel.c_str() );
 
-        fs::path testcases_am = root / "testcases/AM/";
+        fs::path testcases_am = root / "testcases/FM/";
 
         for( auto & testcase : fs::directory_iterator{ testcases_am } )
         {
