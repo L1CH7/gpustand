@@ -8,9 +8,12 @@
 
 AmFft::AmFft( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )  
 :   FftInterface( handler, params, dataArray )
-{}
+{
+    std::cout<<"AmFft!\n";
+}
 
-TimeResult AmFft::compute()
+TimeResult
+AmFft::compute()
 {
     const uint32_t sinArrLen = 1 << 19; // 2^19 = 524288
     uint32_t N = 1 << params.log2N;

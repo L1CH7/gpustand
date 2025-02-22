@@ -1,4 +1,4 @@
-#include "ReadWriteFunctions.h"
+#include "IoJson.h"
 
 // method from_json makes possible to work struct FftParams with nlohmann/json lib
 void 
@@ -14,12 +14,13 @@ from_json( const json & j, FftParams & params )
     params.n1grs        = j["n1grs"];
     params.ndec         = j["ndec"];
     params.dlstr        = j["dlstr"];
+    params.is_am        = (int)j["is_am"];
 }
 
 FftParams
-readJsonParams( const std::string & filename )
+readJsonParams( const fs::path & filepath )
 {
-    std::ifstream ifs( filename );
+    std::ifstream ifs( filepath );
     FftParams params;
     params.nl = -1;
     if( !ifs )
@@ -34,12 +35,9 @@ readJsonParams( const std::string & filename )
 }
 
 void
-writeTimeToFile(
-    std::string fileName,
-    TimeResult result)
+writeTimeToFile( const fs::path & filepath, TimeResult result )
 {
-    std::string file = fileName;
-    std::ofstream ofs(file, std::ios::trunc);
+    std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
         std::cerr << "TimeResult file not opened" << std::endl;
         return;

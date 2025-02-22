@@ -16,6 +16,8 @@
 #   define RESULT_TIME RESULT_DIR"time.stamps"
 #endif
 
+#define WORKSPACE "${PROJECT_SOURCE_DIR}"
+
 #cmakedefine ENABLE_TIME_PROFILING
 
 #cmakedefine ENABLE_DEBUG_COMPUTATIONS

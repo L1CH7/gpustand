@@ -8,9 +8,12 @@
 
 FmFft::FmFft( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )  
 :   FftInterface( handler, params, dataArray )
-{}
+{
+    std::cout<<"FmFft!\n";
+}
 
-TimeResult FmFft::compute()
+TimeResult
+FmFft::compute()
 {
     const int sinArrLen = 524288; //2^19
     uint32_t N = 1 << params.log2N;

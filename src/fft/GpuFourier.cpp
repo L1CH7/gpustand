@@ -21,13 +21,15 @@ FftInterface::~FftInterface()
         delete outArray;
 }
 
-void FftInterface::update( const FftParams & newParams, cl_int2 * newDataArray )
+void
+FftInterface::update( const FftParams & newParams, cl_int2 * newDataArray )
 {
     params = std::move( newParams );
     dataArray = newDataArray;
 }
 
-void FftInterface::invariant()
+void
+FftInterface::invariant()
 {
     if( handler == nullptr )
     {
@@ -57,7 +59,8 @@ FftCreator::~FftCreator()
     delete fft;
 }
 
-void FftCreator::update( const FftParams & newParams, cl_int2 * newDataArray )
+void
+FftCreator::update( const FftParams & newParams, cl_int2 * newDataArray )
 {
     if( newParams.is_am == fft->params.is_am )
         fft->update( newParams, newDataArray );
@@ -69,20 +72,32 @@ void FftCreator::update( const FftParams & newParams, cl_int2 * newDataArray )
     }
 }
 
-TimeResult FftCreator::compute()
+TimeResult
+FftCreator::compute()
 {
     return fft->compute();
 }
 
-cl_float2 * FftCreator::getFftResult() const
+cl_float2 *
+FftCreator::getFftResult() const
 {
     return fft->outArray;
 }
 
-void FftCreator::makeFftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )   
+void
+FftCreator::makeFftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )   
 {
     if( params.is_am )
         fft = new AmFft( handler, params, dataArray );
     else
-        fft = new FmFft( handler, params, dataArray );
+    {
+        uint32_t N = 1 << params.log2N;
+        uint64_t midBufferSize = params.nl * params.kgrs * N * sizeof(cl_float2);
+        uint64_t maxBufferSize = handler->device->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
+        
+        if (midBufferSize > maxBufferSize)
+            fft = new FmFftSepNl( handler, params, dataArray );
+        else
+            fft = new FmFft( handler, params, dataArray );
+    }
 }

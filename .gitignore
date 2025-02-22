@@ -3,3 +3,7 @@ old_src
 result
 diffs.sh
 io_server
+testcases/*/*
+
+*.tar.gz
+data
