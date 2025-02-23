@@ -8,7 +8,10 @@
 #include <IoJson.h>
 #include <config.h>
 
-namespace fs = std::filesystem;
+#ifdef ENABLE_DEBUG_COMPUTATIONS
+#   include <debug_computations.h> 
+    // std::unique_ptr< fs::path > events_path = nullptr;
+#endif
 
 struct Paths
 {
@@ -22,6 +25,8 @@ struct Paths
 
 void TestTemplateLanin( const Paths & paths, ProgramHandler * handler )
 {
+    std::cout << "test:" << paths.params_path.parent_path().c_str() << '\n';
+
     FftParams params = readJsonParams( paths.params_path );
     params.shgd *= params.ndec;
     if( params.is_am )
@@ -78,11 +83,37 @@ void TestTemplateLanin( const Paths & paths, ProgramHandler * handler )
 
     std::ofstream ofs( paths.result_data_path );
     ofs << j_out;
-    writeTimeToFile( paths.result_time_path.parent_path() / "time0.out", times0 );
-    writeTimeToFile( paths.result_time_path.parent_path() / "time1.out", times1 );
+    writeTimeStampsToFile( paths.result_time_path.parent_path() / "time0.out", times0 );
+    writeTimeStampsToFile( paths.result_time_path.parent_path() / "time1.out", times1 );
 }
 
-void RunTestsSingleThread( ProgramHandler * handler )
+void RunSingleTest( ProgramHandler * handler )
+{
+    fs::path root( WORKSPACE );
+    fs::path test_dir       = root          / "testcases/AM" / "000";
+    fs::path result_dir     = test_dir      / "result";
+    if( !fs::exists( result_dir ) )
+        fs::create_directory( result_dir );
+
+#   ifdef ENABLE_DEBUG_COMPUTATIONS
+    // print all middle-events to result dir!
+    changeEventsPath( result_dir );
+#   endif
+
+    Paths paths
+    {
+        .kernel             = root          / "src/fft/GpuKernels.cl",
+        .params_path        = test_dir      / "in_args.json",
+        .input_path         = test_dir      / "out.json",
+        .mseq_path          = test_dir      / "tfpMSeqSigns.json",
+        .result_data_path   = result_dir    / "data.out",
+        .result_time_path   = result_dir    / "time.out"
+    };
+    auto identity = initGpuModule( handler, paths.kernel.c_str() );
+    TestTemplateLanin( paths, handler );
+}
+
+void RunAllTests( ProgramHandler * handler )
 {
     fs::path root( WORKSPACE );
     {
@@ -98,24 +129,29 @@ void RunTestsSingleThread( ProgramHandler * handler )
 
         auto identity = initGpuModule( handler, paths.kernel.c_str() );
 
-        fs::path testcases_am = root / "testcases/FM/";
+        fs::path testcases_am = root / "testcases/AM/";
 
         for( auto & testcase : fs::directory_iterator{ testcases_am } )
         {
             if( fs::is_directory( testcase ) )
             {
-                // std::cout << testcase << '\n';
-                fs::path test_path      = testcase.path();
-                fs::path result_dir     = test_path     / "result";
-                paths.params_path       = test_path     / "in_args.json";
-                paths.input_path        = test_path     / "out.json";
-                paths.mseq_path         = test_path     / "tfpMSeqSigns.json";
-                paths.result_data_path  = result_dir    / "data.out";
-                paths.result_time_path  = result_dir    / "time.out";
+                fs::path test_dir      = testcase.path();
+                fs::path result_dir     = test_dir      / "result";
                 if( !fs::exists( result_dir ) )
                 {
                     fs::create_directory( result_dir );
                 }
+
+#               ifdef ENABLE_DEBUG_COMPUTATIONS
+                // print all middle-events to result dir!
+                changeEventsPath( result_dir );
+#               endif
+
+                paths.params_path       = test_dir      / "in_args.json";
+                paths.input_path        = test_dir      / "out.json";
+                paths.mseq_path         = test_dir      / "tfpMSeqSigns.json";
+                paths.result_data_path  = result_dir    / "data.out";
+                paths.result_time_path  = result_dir    / "time.out";
                 TestTemplateLanin( paths, handler );
             }
         }

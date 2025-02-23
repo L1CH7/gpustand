@@ -70,6 +70,6 @@ readVectorFromJsonFile_2Polars( const fs::path & filepath )
 }
 
 void
-writeTimeToFile( const fs::path & filepath, TimeResult result );
+writeTimeStampsToFile( const fs::path & filepath, TimeResult result );
 
 #endif // IO_JSON_TESTS_H__

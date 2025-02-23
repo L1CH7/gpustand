@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 struct DeviceIdentity {
     std::string name;
@@ -34,22 +35,22 @@ struct FftParams
 
 struct TimeResult
 {
-    unsigned long writeStart;
-    unsigned long writeEnd;
+    uint64_t write_start;
+    uint64_t write_end;
 
-    unsigned long sineComputationStart;
-    unsigned long sineComputationEnd;
+    uint64_t sine_computation_start;
+    uint64_t sine_computation_end;
 
-    unsigned long fmSignFFTStart;
-    unsigned long fmSignFFTEnd;
-    unsigned long fmDataFFTStart;
-    unsigned long fmDataFFTEnd;
+    uint64_t fm_sign_fft_start;
+    uint64_t fm_sign_fft_end;
+    uint64_t fm_data_fft_start;
+    uint64_t fm_data_fft_end;
 
-    unsigned long FFTStart;
-    unsigned long FFTEnd;
+    uint64_t fft_start;
+    uint64_t fft_end;
 
-    unsigned long readStart;
-    unsigned long readEnd;
+    uint64_t read_start;
+    uint64_t read_end;
 };
 
 #endif // TYPES_H__

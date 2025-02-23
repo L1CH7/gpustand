@@ -2,4 +2,4 @@
 
 rm -rf build
 
-rmdir testcases/*/*/result
+rm -rf testcases/*/*/result

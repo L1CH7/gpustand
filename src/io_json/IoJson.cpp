@@ -34,55 +34,56 @@ readJsonParams( const fs::path & filepath )
 }
 
 void
-writeTimeToFile( const fs::path & filepath, TimeResult result )
+writeTimeStampsToFile( const fs::path & filepath, TimeResult t )
 {
     std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
         std::cerr << "TimeResult file not opened" << std::endl;
         return;
     }
-    ulong funcstart = result.writeStart;
-    ulong funcend = result.readEnd;
-    double funclength = ((double)funcend - funcstart) / 1000000;
+    char * line = new char[100];
+    double start, end, duration; // in milliseconds
+    auto get_stamps = [ &start, &end, &duration ]( uint64_t _start, uint64_t _end )
+    {
+        double ms = 1. / 1000000.;
+        start = static_cast< double >( _start ) * ms;
+        end = static_cast< double >( _end ) * ms;
+        duration = end - start;
+    };
 
-    ofs << "write data\n"
-            << "\tstart:\t"
-            << (((double)result.writeStart - funcstart) / 1000000) << " ms\n"
-            << "\tend:\t"
-            << (((double)result.writeEnd - funcstart) / 1000000) << " ms\n"
-            << "\texecution duration:\t"
-            << ((double)result.writeEnd - result.writeStart) / 1000000 << " ms\n";
-    if (result.fmSignFFTStart != 0) {
-        ofs << "sign fft\n"
-                << "\tstart:\t"
-                << (((double)result.fmSignFFTStart - funcstart) / 1000000) << " ms\n"
-                << "\tend:\t"
-                << (((double)result.fmSignFFTEnd - funcstart) / 1000000) << " ms\n"
-                << "\texecution duration:\t"
-                << ((double)result.fmSignFFTEnd - result.fmSignFFTStart) / 1000000 << " ms\n";
-        ofs << "data fft\n"
-                << "\tstart:\t"
-                << (((double)result.fmDataFFTStart - funcstart) / 1000000) << " ms\n"
-                << "\tend:\t"
-                << (((double)result.fmDataFFTEnd - funcstart) / 1000000) << " ms\n"
-                << "\texecution duration:\t"
-                << ((double)result.fmDataFFTEnd - result.fmDataFFTStart) / 1000000 << " ms\n";
+    auto print_stamps = [ &start, &end, &duration, &get_stamps, &line, &ofs ]( const char * _stamp, uint64_t _start, uint64_t _end )
+    {
+        get_stamps( _start, _end );
+        std::sprintf( line, "%-20s%-20.5f%-20.5f%-20.5f\n", _stamp, start, end, duration );
+        ofs << line;
+    };
+
+    ofs << "****" << ( t.fm_sign_fft_start ? "FM" : "AM" ) << "_FFT****\n\n";
+
+    get_stamps( t.write_start, t.read_end );
+    std::sprintf( line, "%-20s%-20.5f\n", "Start:", start );
+    ofs << line;
+
+    std::sprintf( line, "%-20s%-20.5f\n", "End:", end );
+    ofs << line;
+
+    std::sprintf( line, "%-20s%-20.5f\n\n", "Duration:", end - start );
+    ofs << line;
+
+    std::sprintf( line, "%-20s%-20s%-20s%-20s\n", "Stamp", "Start", "End", "Duration" );
+    ofs << line;
+
+    print_stamps( "Write data", t.write_start, t.write_end );
+    print_stamps( "Sine", t.sine_computation_start, t.sine_computation_end );
+    if( t.fm_sign_fft_start )
+    {
+        print_stamps( "FM Sign FFT", t.fm_sign_fft_start, t.fm_sign_fft_end );
+        print_stamps( "FM Data FFT", t.fm_data_fft_start, t.fm_data_fft_end );
     }
-    ofs << "fft\n"
-            << "\tstart:\t"
-            << (((double)result.FFTStart - funcstart) / 1000000) << " ms\n"
-            << "\tend:\t"
-            << (((double)result.FFTEnd - funcstart) / 1000000) << " ms\n"
-            << "\texecution duration:\t"
-            << ((double)result.FFTEnd - result.FFTStart) / 1000000 << " ms\n";
-    ofs << "read data\n"
-            << "\tstart:\t"
-            << (((double)result.readStart - funcstart) / 1000000) << " ms\n"
-            << "\tend:\t"
-            << (((double)result.readEnd - funcstart) / 1000000) << " ms\n"
-            << "\texecution duration:\t"
-            << ((double)result.readEnd - result.readStart) / 1000000 << " ms\n";
-    ofs << "FFT full execution time: " << funclength << std::endl;
+    print_stamps( "FFT", t.fft_start, t.fft_end );
+    print_stamps( "Read data", t.read_start, t.read_end );
+
+    delete[] line;
     ofs.close();
 }
 

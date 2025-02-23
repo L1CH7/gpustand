@@ -19,10 +19,10 @@ cmake 	-B "$BUILD_DIR" -S "${fullpath}" 								\
 		-D CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS" 							\
 		-D CMAKE_CXX_COMPILER="$CMAKE_CXX_COMPILER" 					\
         -D CMAKE_BUILD_TYPE=debug									    \
-        -D DATA_DIR_FROM_CONFIG_FILE=ON                                 \
-        -D RESULT_DIR_FROM_CONFIG_FILE=ON                               \
-        -D ENABLE_TIME_PROFILING=ON                                     \
         # -D ENABLE_DEBUG_COMPUTATIONS=ON                                 \
+        # -D DATA_DIR_FROM_CONFIG_FILE=ON                                 \
+        # -D RESULT_DIR_FROM_CONFIG_FILE=ON                               \
+        # -D ENABLE_TIME_PROFILING=ON                                     \
 
 
 if [ $? -eq 0 ]; then

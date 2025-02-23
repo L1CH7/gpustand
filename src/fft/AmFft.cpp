@@ -153,18 +153,18 @@ AmFft::compute()
     queue.finish();
 
     TimeResult time = {
-        .writeStart             = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
-        .writeEnd               = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
-        .sineComputationStart   = eventArray[1].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
-        .sineComputationEnd     = eventArray[1].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
-        .fmSignFFTStart         = 0,
-        .fmSignFFTEnd           = 0,
-        .fmDataFFTStart         = 0,
-        .fmDataFFTEnd           = 0,
-        .FFTStart               = eventArray[2].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
-        .FFTEnd                 = eventArray[4].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
-        .readStart              = eventArray[5].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
-        .readEnd                = eventArray[5].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
+        .write_start            = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
+        .write_end              = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
+        .sine_computation_start = eventArray[1].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
+        .sine_computation_end   = eventArray[1].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
+        .fm_sign_fft_start      = 0,
+        .fm_sign_fft_end        = 0,
+        .fm_data_fft_start      = 0,
+        .fm_data_fft_end        = 0,
+        .fft_start              = eventArray[2].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
+        .fft_end                = eventArray[4].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
+        .read_start             = eventArray[5].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
+        .read_end               = eventArray[5].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
     };
     return time;
 }

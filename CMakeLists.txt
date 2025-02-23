@@ -23,6 +23,7 @@ include_directories(
     "${CMAKE_CURRENT_BINARY_DIR}"
     include
     src
+    # libs/thread-pool-5.0.0
 )
 
 configure_file(

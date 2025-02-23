@@ -12,4 +12,13 @@
     std::cerr << "\033[0;0m\n";                             \
 }
 
+// user-defined literal for printing red characters
+inline std::string operator ""_red( const char * str, const size_t len )
+{
+    std::string s = "\033[0;31m" // red text colour
+    + std::string( str )
+    + "\033[0;0m"; // default text colour
+    return s;
+}
+
 #endif // ERROR_H__

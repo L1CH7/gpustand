@@ -1,3 +1,7 @@
+// #ifdef ENABLE_DEBUG_COMPUTATIONS
+// #   include <debug_computations.h> 
+//     std::unique_ptr< fs::path > events_path = nullptr;
+// #endif
 #include <tests.h>
 
 int main()
@@ -7,7 +11,8 @@ int main()
     std::string error;
     ProgramHandler * handler = makeProgramHandler( platform_id, device_id, error );
 
-    RunTestsSingleThread( handler );
+    RunSingleTest( handler );
+    // RunAllTests( handler );
     delete handler;
 
     return 0;
