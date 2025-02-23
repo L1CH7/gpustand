@@ -15,7 +15,6 @@
 
 struct Paths
 {
-    fs::path kernel;
     fs::path params_path;
     fs::path input_path;
     fs::path mseq_path;
@@ -43,7 +42,7 @@ void TestTemplateLanin( const Paths & paths, ProgramHandler * handler )
         params.mseq = std::vector< int >( j );
     }
 
-    // Read input vector nd cast it to cl_int2
+    // Read input vector and cast it to cl_int2
     json j;
     std::ifstream ifs( paths.input_path );
     ifs >> j;
@@ -87,10 +86,8 @@ void TestTemplateLanin( const Paths & paths, ProgramHandler * handler )
     writeTimeStampsToFile( paths.result_time_path.parent_path() / "time1.out", times1 );
 }
 
-void RunSingleTest( ProgramHandler * handler )
+void RunSingleTest( ProgramHandler * handler, const fs::path & test_dir )
 {
-    fs::path root( WORKSPACE );
-    fs::path test_dir       = root          / "testcases/AM" / "000";
     fs::path result_dir     = test_dir      / "result";
     if( !fs::exists( result_dir ) )
         fs::create_directory( result_dir );
@@ -102,58 +99,46 @@ void RunSingleTest( ProgramHandler * handler )
 
     Paths paths
     {
-        .kernel             = root          / "src/fft/GpuKernels.cl",
         .params_path        = test_dir      / "in_args.json",
         .input_path         = test_dir      / "out.json",
         .mseq_path          = test_dir      / "tfpMSeqSigns.json",
         .result_data_path   = result_dir    / "data.out",
         .result_time_path   = result_dir    / "time.out"
     };
-    auto identity = initGpuModule( handler, paths.kernel.c_str() );
     TestTemplateLanin( paths, handler );
 }
 
-void RunAllTests( ProgramHandler * handler )
+void RunAllTests( ProgramHandler * handler, const fs::path & testcases_dir )
 {
-    fs::path root( WORKSPACE );
+    if( !handler )
     {
-        Paths paths
+        std::cout << "No program handler created for tests\n"_red;
+    }
+
+    for( auto & testcase : fs::directory_iterator{ testcases_dir } )
+    {
+        if( fs::is_directory( testcase ) )
         {
-            .kernel = root / "src/fft/GpuKernels.cl",
-            .params_path = "",
-            .input_path = "",
-            .mseq_path = "",
-            .result_data_path = "",
-            .result_time_path = ""
-        };
-
-        auto identity = initGpuModule( handler, paths.kernel.c_str() );
-
-        fs::path testcases_am = root / "testcases/AM/";
-
-        for( auto & testcase : fs::directory_iterator{ testcases_am } )
-        {
-            if( fs::is_directory( testcase ) )
+            fs::path test_dir      = testcase.path();
+            fs::path result_dir     = test_dir      / "result";
+            if( !fs::exists( result_dir ) )
             {
-                fs::path test_dir      = testcase.path();
-                fs::path result_dir     = test_dir      / "result";
-                if( !fs::exists( result_dir ) )
-                {
-                    fs::create_directory( result_dir );
-                }
-
-#               ifdef ENABLE_DEBUG_COMPUTATIONS
-                // print all middle-events to result dir!
-                changeEventsPath( result_dir );
-#               endif
-
-                paths.params_path       = test_dir      / "in_args.json";
-                paths.input_path        = test_dir      / "out.json";
-                paths.mseq_path         = test_dir      / "tfpMSeqSigns.json";
-                paths.result_data_path  = result_dir    / "data.out";
-                paths.result_time_path  = result_dir    / "time.out";
-                TestTemplateLanin( paths, handler );
+                fs::create_directory( result_dir );
             }
+
+#           ifdef ENABLE_DEBUG_COMPUTATIONS
+            // print all middle-events to result dir!
+            changeEventsPath( result_dir );
+#           endif
+            Paths paths
+            {
+                .params_path       = test_dir      / "in_args.json",
+                .input_path        = test_dir      / "out.json",
+                .mseq_path         = test_dir      / "tfpMSeqSigns.json",
+                .result_data_path  = result_dir    / "data.out",
+                .result_time_path  = result_dir    / "time.out"
+            };
+            TestTemplateLanin( paths, handler );
         }
     }
 }
