@@ -24,8 +24,12 @@ FftInterface::~FftInterface()
 void
 FftInterface::update( const FftParams & newParams, cl_int2 * newDataArray )
 {
-    params = std::move( newParams );
+    params = std::move(newParams);
+    // if( dataArray )
+    //     delete dataArray;
     dataArray = newDataArray;
+
+    outArray = new cl_float2[params.nl * params.kgd * params.kgrs];
 }
 
 void

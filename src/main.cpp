@@ -1,4 +1,5 @@
 #include <tests.h>
+#include <tests_parallel.h>
 
 int main()
 {
@@ -13,15 +14,42 @@ int main()
         return 1;
 
     auto identity = initGpuModule( handler, root_dir / "src/fft/GpuKernels.cl" );
+    FftCreator fft( handler, FftParams{ 
+        .nl=1, 
+        .kgrs=1,
+        .kgd=1
+        }, nullptr );
 
-    {   // Single test run example. All datafiles must be in same directory(test_dir)
-        fs::path test_dir = root_dir / "testcases/AM" / "000"; // /path/to/test/dir
-        RunSingleTest( handler, test_dir );
-    }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/FM" / "005"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/AM" / "049"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/AM" / "048"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/AM" / "001"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
+    // // delete handler;return 0;
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/FM" / "002"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
+
+    // {   // All testcases run example. 
+    //     fs::path testcases = root_dir / "testcases/AM"; // /path/to/all/testcases/dir
+    //     RunAllTests( fft, testcases );
+    // }
 
     {   // All testcases run example. 
         fs::path testcases = root_dir / "testcases/FM"; // /path/to/all/testcases/dir
-        RunAllTests( handler, testcases );
+        RunAllTestsParallelV2( handler, testcases );
     }
     delete handler;
 

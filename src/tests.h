@@ -22,36 +22,36 @@ struct Paths
     fs::path result_time_path;
 };
 
-void TestTemplateLanin( const Paths & paths, ProgramHandler * handler )
+void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
 {
-    std::cout << "test:" << paths.params_path.parent_path().c_str() << '\n';
-
     FftParams params = readJsonParams( paths.params_path );
     params.shgd *= params.ndec;
     if( params.is_am )
     {
+        std::cout << "AM!!!\n";
         params.log2N = ( uint32_t )std::log2( params.true_nihs ) + 1;
         params.mseq = std::vector< int >();
     }
     else
     {
+        std::cout << "FM!!!\n";
         params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
-        json j;
         std::ifstream ifs( paths.mseq_path );
-        ifs >> j;
+        json j = json::parse( ifs );
         params.mseq = std::vector< int >( j );
+        params.mseq.resize( 1 << params.log2N, 0 ); // mseq should be N elems, filled with zeroes
     }
 
     // Read input vector and cast it to cl_int2
-    json j;
     std::ifstream ifs( paths.input_path );
-    ifs >> j;
+    json j = json::parse( ifs );
     std::vector< std::complex< int > > polar0( j["polar0"] ), polar1( j["polar1"] );
 
     auto polar0_ptr = reinterpret_cast< cl_int2 * >( polar0.data() );
     auto polar1_ptr = reinterpret_cast< cl_int2 * >( polar1.data() );
 
-    FftCreator fft( handler, params, polar0_ptr );
+    // FftCreator fft( handler, params, polar0_ptr );
+    fft.update( params, polar0_ptr );
     auto times0 = fft.compute();
     auto res0_ptr = fft.getFftResult();
 
@@ -81,13 +81,15 @@ void TestTemplateLanin( const Paths & paths, ProgramHandler * handler )
     }
 
     std::ofstream ofs( paths.result_data_path );
-    ofs << j_out;
+    ofs << j_out.dump(4);
     writeTimeStampsToFile( paths.result_time_path.parent_path() / "time0.out", times0 );
     writeTimeStampsToFile( paths.result_time_path.parent_path() / "time1.out", times1 );
 }
 
-void RunSingleTest( ProgramHandler * handler, const fs::path & test_dir )
+void RunSingleTest( FftCreator & fft, const fs::path & test_dir )
 {
+    std::cout << "test:" << test_dir.c_str() << '\n';
+
     fs::path result_dir     = test_dir      / "result";
     if( !fs::exists( result_dir ) )
         fs::create_directory( result_dir );
@@ -105,40 +107,21 @@ void RunSingleTest( ProgramHandler * handler, const fs::path & test_dir )
         .result_data_path   = result_dir    / "data.out",
         .result_time_path   = result_dir    / "time.out"
     };
-    TestTemplateLanin( paths, handler );
+    TestTemplate2Polars( fft, paths );
 }
 
-void RunAllTests( ProgramHandler * handler, const fs::path & testcases_dir )
+void RunAllTests( FftCreator & fft, const fs::path & testcases_dir )
 {
-    if( !handler )
-    {
-        std::cout << "No program handler created for tests\n"_red;
-    }
+    // if( !handler )
+    // {
+    //     std::cout << "No program handler created for tests\n"_red;
+    // }
 
     for( auto & testcase : fs::directory_iterator{ testcases_dir } )
     {
         if( fs::is_directory( testcase ) )
         {
-            fs::path test_dir      = testcase.path();
-            fs::path result_dir     = test_dir      / "result";
-            if( !fs::exists( result_dir ) )
-            {
-                fs::create_directory( result_dir );
-            }
-
-#           ifdef ENABLE_DEBUG_COMPUTATIONS
-            // print all middle-events to result dir!
-            changeEventsPath( result_dir );
-#           endif
-            Paths paths
-            {
-                .params_path       = test_dir      / "in_args.json",
-                .input_path        = test_dir      / "out.json",
-                .mseq_path         = test_dir      / "tfpMSeqSigns.json",
-                .result_data_path  = result_dir    / "data.out",
-                .result_time_path  = result_dir    / "time.out"
-            };
-            TestTemplateLanin( paths, handler );
+            RunSingleTest( fft, testcase.path() );
         }
     }
 }
