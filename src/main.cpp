@@ -20,14 +20,14 @@ int main()
         .kgd=1
         }, nullptr );
 
-    // {   // Single test run example. All datafiles must be in same directory(test_dir)
-    //     fs::path test_dir = root_dir / "testcases/FM" / "005"; // /path/to/test/dir
-    //     RunSingleTest( fft, test_dir );
-    // }
-    // {   // Single test run example. All datafiles must be in same directory(test_dir)
-    //     fs::path test_dir = root_dir / "testcases/AM" / "049"; // /path/to/test/dir
-    //     RunSingleTest( fft, test_dir );
-    // }
+    {   // Single test run example. All datafiles must be in same directory(test_dir)
+        fs::path test_dir = root_dir / "testcases/FM" / "000"; // /path/to/test/dir
+        RunSingleTest( fft, test_dir );
+    }
+    {   // Single test run example. All datafiles must be in same directory(test_dir)
+        fs::path test_dir = root_dir / "testcases/AM" / "049"; // /path/to/test/dir
+        RunSingleTest( fft, test_dir );
+    }
     // {   // Single test run example. All datafiles must be in same directory(test_dir)
     //     fs::path test_dir = root_dir / "testcases/AM" / "048"; // /path/to/test/dir
     //     RunSingleTest( fft, test_dir );
@@ -47,10 +47,10 @@ int main()
     //     RunAllTests( fft, testcases );
     // }
 
-    {   // All testcases run example. 
-        fs::path testcases = root_dir / "testcases/FM"; // /path/to/all/testcases/dir
-        RunAllTestsParallelV2( handler, testcases );
-    }
+    // {   // All testcases run example. 
+    //     fs::path testcases = root_dir / "testcases/AM"; // /path/to/all/testcases/dir
+    //     RunAllTestsParallelV2( handler, testcases );
+    // }
     delete handler;
 
     return 0;

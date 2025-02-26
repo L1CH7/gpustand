@@ -79,6 +79,15 @@ void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
         key1 << "Ray" << i << "Polar1";
         j_out[key1.str()] = resv1rays[i];
     }
+    // for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
+    // {
+    //     std::string ray = "Ray" + std::to_string( i );
+    //     resv0rays[i] = std::vector< std::complex< float > >( res0_complex_ptr + offset, res0_complex_ptr + offset + step );
+    //     j_out["Polar0"][ray] = resv0rays[i];
+
+    //     resv1rays[i] = std::vector< std::complex< float > >( res1_complex_ptr + offset, res1_complex_ptr + offset + step );
+    //     j_out["Polar1"][ray] = resv1rays[i];
+    // }
 
     std::ofstream ofs( paths.result_data_path );
     ofs << j_out.dump(4);

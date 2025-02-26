@@ -37,12 +37,16 @@ void RunAllTestsParallelV2( ProgramHandler * handler, const fs::path & testcases
         std::cout << "No program handler created for tests\n"_red;
     }
 
-    BS::thread_pool pool;
+    BS::thread_pool pool(11);
     for( auto & testcase : fs::directory_iterator{ testcases_dir } )
     {
         if( fs::is_directory( testcase ) )
         {
+
             fs::path p = testcase.path();
+            // wait if all threads busy
+            while( pool.get_tasks_running() >= pool.get_thread_count() ){};
+
             pool.detach_task( [ &handler, p ]{ 
                 FftCreator fft{ handler, FftParams{ 
                     .is_am = false,
