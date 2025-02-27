@@ -142,15 +142,15 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(60, 90), constrained_layout=True)
     grd = gsp.GridSpec(nrows=2, ncols=2, figure=fig)
 
-    testpath_fm = Path('..') / 'testcases' / 'FM' / '000'
+    testpath_fm = Path('..') / 'testcases' / 'FM' / '006'
     paramspath = testpath_fm / 'in_args.json'
     nl=0
     plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,0], testpath_fm / 'ftps.json', paramspath, 'Polar0', nl)
-    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,1], testpath_fm / 'result/data.out', paramspath, 'Polar0', nl)
+    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,1], testpath_fm / 'result/data.json', paramspath, 'Polar0', nl)
 
-    testpath_am = Path('..') / 'testcases' / 'AM' / '000'
-    paramspath = testpath_am / 'in_args.json'
-    nl=0
-    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,0], testpath_am / 'ftps.json', paramspath, 'Polar0', nl)
-    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,1], testpath_am / 'result/data.out', paramspath, 'Polar0', nl)
+    # testpath_am = Path('..') / 'testcases' / 'AM' / '000'
+    # paramspath = testpath_am / 'in_args.json'
+    # nl=0
+    # plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,0], testpath_am / 'ftps.json', paramspath, 'Polar0', nl)
+    # plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,1], testpath_am / 'result/data.json', paramspath, 'Polar0', nl)
     plt.show()

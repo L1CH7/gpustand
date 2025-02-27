@@ -91,8 +91,10 @@ void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
 
     std::ofstream ofs( paths.result_data_path );
     ofs << j_out.dump(4);
-    writeTimeStampsToFile( paths.result_time_path.parent_path() / "time0.out", times0 );
-    writeTimeStampsToFile( paths.result_time_path.parent_path() / "time1.out", times1 );
+    // writeTimeStampsToFile( paths.result_time_path.parent_path() / "time0.out", times0 );
+    // writeTimeStampsToFile( paths.result_time_path.parent_path() / "time1.out", times1 );
+    writeTimeStampsToJsonFile( paths.result_time_path.parent_path() / "time0.json", times0 );
+    writeTimeStampsToJsonFile( paths.result_time_path.parent_path() / "time1.json", times1 );
 }
 
 void RunSingleTest( FftCreator & fft, const fs::path & test_dir )
@@ -113,7 +115,7 @@ void RunSingleTest( FftCreator & fft, const fs::path & test_dir )
         .params_path        = test_dir      / "in_args.json",
         .input_path         = test_dir      / "out.json",
         .mseq_path          = test_dir      / "tfpMSeqSigns.json",
-        .result_data_path   = result_dir    / "data.out",
+        .result_data_path   = result_dir    / "data.json",
         .result_time_path   = result_dir    / "time.out"
     };
     TestTemplate2Polars( fft, paths );

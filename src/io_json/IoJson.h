@@ -9,6 +9,7 @@
 namespace fs = std::filesystem;
 
 #include <types.h>
+#include <error.h>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -71,5 +72,8 @@ readVectorFromJsonFile_2Polars( const fs::path & filepath )
 
 void
 writeTimeStampsToFile( const fs::path & filepath, TimeResult result );
+
+void
+writeTimeStampsToJsonFile( const fs::path & filepath, TimeResult result );
 
 #endif // IO_JSON_TESTS_H__

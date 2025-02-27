@@ -25,7 +25,7 @@ readJsonParams( const fs::path & filepath )
     params.nl = -1;
     if( !ifs )
     {
-        std::cerr << "Param file not opened" << std::endl;
+        std::cerr << "Param file not opened"_red << std::endl;
         return params;
     }
     json j = json::parse( ifs );
@@ -38,7 +38,7 @@ writeTimeStampsToFile( const fs::path & filepath, TimeResult t )
 {
     std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
-        std::cerr << "TimeResult file not opened" << std::endl;
+        std::cerr << "TimeResult file not opened"_red << std::endl;
         return;
     }
     char * line = new char[100];
@@ -84,6 +84,49 @@ writeTimeStampsToFile( const fs::path & filepath, TimeResult t )
     print_stamps( "Read data", t.read_start, t.read_end );
 
     delete[] line;
+    ofs.close();
+}
+
+void
+writeTimeStampsToJsonFile( const fs::path & filepath, TimeResult t )
+{
+    std::ofstream ofs( filepath, std::ios::trunc );
+    if (!ofs.is_open()) {
+        std::cerr << "TimeResult file not opened"_red << std::endl;
+        return;
+    }
+    auto get_stamps = []( uint64_t _start, uint64_t _end )
+    {
+        json stamp;
+        double start, end, duration; // in milliseconds
+        double ms = 1. / 1000000.;
+
+        start = static_cast< double >( _start ) * ms;
+        end = static_cast< double >( _end ) * ms;
+        duration = end - start;
+
+        stamp["start"] = start;
+        stamp["end"] = end;
+        stamp["duration"] = duration;
+
+        return stamp;
+    };
+
+    json j, stamp;
+
+    j["total"] = get_stamps( t.write_start, t.read_end );
+    j["write_data"] = get_stamps( t.write_start, t.write_end );
+    j["sine"] = get_stamps( t.sine_computation_start, t.sine_computation_end );
+
+    if( t.fm_sign_fft_start )
+    {
+        j["fm_sign_fft"] = get_stamps( t.fm_sign_fft_start, t.fm_sign_fft_end );
+        j["fm_data_fft"] = get_stamps( t.fm_data_fft_start, t.fm_data_fft_end );
+    }
+    j["fft"] = get_stamps( t.fft_start, t.fft_end );
+    j["read_data"] = get_stamps( t.read_start, t.read_end );
+
+    ofs << j.dump(4);
     ofs.close();
 }
 

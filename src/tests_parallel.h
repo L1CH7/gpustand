@@ -37,7 +37,7 @@ void RunAllTestsParallelV2( ProgramHandler * handler, const fs::path & testcases
         std::cout << "No program handler created for tests\n"_red;
     }
 
-    BS::thread_pool pool(11);
+    BS::thread_pool pool;
     for( auto & testcase : fs::directory_iterator{ testcases_dir } )
     {
         if( fs::is_directory( testcase ) )

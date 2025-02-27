@@ -51,14 +51,14 @@ int main( int argc, char ** argv )
         .kgd=1
         }, nullptr );
 
-    {   // Single test run example. All datafiles must be in same directory(test_dir)
-        fs::path test_dir = root_dir / "testcases/FM" / "000"; // /path/to/test/dir
-        RunSingleTest( fft, test_dir );
-    }
-    {   // Single test run example. All datafiles must be in same directory(test_dir)
-        fs::path test_dir = root_dir / "testcases/AM" / "000"; // /path/to/test/dir
-        RunSingleTest( fft, test_dir );
-    }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/FM" / "000"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/AM" / "000"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
     // {   // Single test run example. All datafiles must be in same directory(test_dir)
     //     fs::path test_dir = root_dir / "testcases/AM" / "048"; // /path/to/test/dir
     //     RunSingleTest( fft, test_dir );
@@ -73,10 +73,10 @@ int main( int argc, char ** argv )
     //     RunSingleTest( fft, test_dir );
     // }
 
-    // {   // All testcases run example. 
-    //     fs::path testcases = root_dir / "testcases/AM"; // /path/to/all/testcases/dir
-    //     RunAllTests( fft, testcases );
-    // }
+    {   // All testcases run example. 
+        fs::path testcases = root_dir / "testcases/AM"; // /path/to/all/testcases/dir
+        RunAllTests( fft, testcases );
+    }
 
     // {   // All testcases run example. 
     //     fs::path testcases = root_dir / "testcases/AM"; // /path/to/all/testcases/dir

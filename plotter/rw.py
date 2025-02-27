@@ -1,5 +1,5 @@
 import json
-import cupy as np
+import numpy as np
 from pathlib import Path
 # from Data import *
 
