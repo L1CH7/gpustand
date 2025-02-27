@@ -1,3 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-./build/src/GpuFFT
+PLATFORM_ID=3
+DEVICE_ID=0
+
+./build/src/GpuFFT $PLATFORM_ID $DEVICE_ID

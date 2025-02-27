@@ -21,4 +21,13 @@ inline std::string operator ""_red( const char * str, const size_t len )
     return s;
 }
 
+// user-defined literal for printing red characters
+inline std::string operator ""_magenta( const char * str, const size_t len )
+{
+    std::string s = "\033[0;35m" // red text colour
+    + std::string( str )
+    + "\033[0;0m"; // default text colour
+    return s;
+}
+
 #endif // ERROR_H__
