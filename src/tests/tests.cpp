@@ -70,6 +70,44 @@ void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
     writeTimeStampsToJsonFile( paths.result_time_path.parent_path() / "time1.json", times1 );
 }
 
+void TestTemplate1Polar( FftCreator & fft, const Paths & paths, std::string polar_json_key )
+{
+    FftParams params = readJsonParams( paths.params_path, paths.mseq_path );
+
+    // Read input vector and cast it to cl_int2
+    auto polar = readVectorFromJsonFile1Polar< std::complex< int > >( paths.input_path, polar_json_key );
+    auto polar_ptr = reinterpret_cast< cl_int2 * >( polar.data() );
+
+    // FftCreator fft( handler, params, polar0_ptr );
+    fft.update( params, polar_ptr );
+    auto times = fft.compute();
+    auto res_ptr = fft.getFftResult();
+
+    // Get output cl_float2 array ant cast it to vector
+    size_t res_size = params.nl * params.kgd * params.kgrs;
+    auto res_complex_ptr = reinterpret_cast< std::complex< float > * >( res_ptr );
+
+    json j_out;
+    std::vector< std::vector< std::complex< float > > > resv0rays( params.nl );
+    for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
+    {
+        std::stringstream key0, key1;
+        resv0rays[i] = std::vector< std::complex< float > >( res_complex_ptr + offset, res_complex_ptr + offset + step );
+        key0 << "Ray" << i << "Polar" << polar_json_key.back();
+        j_out[key0.str()] = resv0rays[i];
+    }
+    // for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
+    // {
+    //     std::string ray = "Ray" + std::to_string( i );
+    //     resv0rays[i] = std::vector< std::complex< float > >( res_complex_ptr + offset, res_complex_ptr + offset + step );
+    //     j_out["Polar0"][ray] = resv0rays[i];
+    // }
+
+    std::ofstream ofs( paths.result_data_path );
+    ofs << j_out.dump(4);
+    writeTimeStampsToJsonFile( paths.result_time_path.parent_path(), times );
+}
+
 void RunSingleTest( FftCreator & fft, const fs::path & test_dir )
 {
     std::cout << "test:" << test_dir.c_str() << '\n';

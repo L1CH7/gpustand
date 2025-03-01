@@ -8,12 +8,16 @@
 
 #include <types.h>
 #include <error.h>
+#include <CLDefs.h>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 FftParams
 readJsonParams( const fs::path & filepath );
+
+FftParams
+readJsonParams( const fs::path & filepath, const fs::path & mseq_path );
 
 // Methods to convert std::complex from/to nlohmann::json
 // It is necessary to write them in corresponding namespace - std
@@ -54,6 +58,16 @@ readVectorFromJsonFile( const fs::path & filepath )
     json j = json::parse( ifs );
     ifs.close();
     return std::vector< T >( j );
+}
+
+template< typename T >
+std::vector< T >
+readVectorFromJsonFile1Polar( const fs::path & filepath, std::string polar_json_key )
+{
+    std::ifstream ifs( filepath );
+    json j = json::parse( ifs );
+    ifs.close();
+    return std::vector< T >( j[polar_json_key] );
 }
 
 template< typename T >

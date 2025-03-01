@@ -21,16 +21,44 @@ FftParams
 readJsonParams( const fs::path & filepath )
 {
     std::ifstream ifs( filepath );
-    FftParams params;
-    params.nl = -1;
     if( !ifs )
     {
         std::cerr << "Param file not opened"_red << std::endl;
-        return params;
+        return FftParams{ .nl = static_cast< uint >( -1 ) };
     }
     json j = json::parse( ifs );
     ifs.close();
     return FftParams(j);
+}
+
+FftParams
+readJsonParams( const fs::path & filepath, const fs::path & mseq_path )
+{
+    std::ifstream ifs( filepath );
+    if( !ifs )
+    {
+        std::cerr << "Param file not opened"_red << std::endl;
+        return FftParams{ .nl = static_cast< uint >( -1 ) };
+    }
+    json j = json::parse( ifs );
+    ifs.close();
+
+    FftParams params(j);
+    params.shgd *= params.ndec;
+    if( params.is_am )
+    {
+        std::cout << "AM params read!!!\n";
+        params.log2N = ( uint32_t )std::log2( params.true_nihs ) + 1;
+        params.mseq = std::vector< int >();
+    }
+    else
+    {
+        std::cout << "FM params read!!!\n";
+        params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
+        params.mseq = readVectorFromJsonFile< cl_int >( mseq_path );
+        params.mseq.resize( 1 << params.log2N, 0 ); // mseq should be N elems, filled with zeroes
+    }
+    return std::move( params );
 }
 
 void

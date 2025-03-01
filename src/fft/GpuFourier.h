@@ -91,7 +91,7 @@ public:
     cl_float2 * getFftResult() const;
 
 private:
-    std::shared_ptr< FftInterface > fft;
+    std::unique_ptr< FftInterface > fft;
 };
 
 #endif // GPU_FOURIER_H__

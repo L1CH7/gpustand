@@ -111,7 +111,7 @@ void
 FftCreator::makeFftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )   
 {
     if( params.is_am )
-        fft = std::make_shared< AmFft >( handler, params, dataArray );
+        fft = std::make_unique< AmFft >( handler, params, dataArray );
     else
     {
         uint32_t N = 1 << params.log2N;
@@ -119,8 +119,8 @@ FftCreator::makeFftInterface( std::shared_ptr< ProgramHandler > handler, const F
         uint64_t maxBufferSize = handler->device->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
         
         if (midBufferSize > maxBufferSize)
-            fft = std::make_shared< FmFftSepNl >( handler, params, dataArray );
+            fft = std::make_unique< FmFftSepNl >( handler, params, dataArray );
         else
-            fft = std::make_shared< FmFft >( handler, params, dataArray );
+            fft = std::make_unique< FmFft >( handler, params, dataArray );
     }
 }

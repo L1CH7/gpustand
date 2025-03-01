@@ -22,6 +22,8 @@ struct Paths
     fs::path result_time_path;
 };
 
+void TestTemplate1Polar( FftCreator & fft, const Paths & paths, std::string polar_json_key );
+
 void TestTemplate2Polars( FftCreator & fft, const Paths & paths );
 
 void RunSingleTest( FftCreator & fft, const fs::path & test_dir );
