@@ -12,9 +12,9 @@ class FftCreator;
 class FftInterface
 {
 public:
-    FftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
+    FftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
 
-    FftInterface( ProgramHandler * handler );
+    FftInterface( std::shared_ptr< ProgramHandler > handler );
 
     ~FftInterface();
 
@@ -29,7 +29,7 @@ public:
 protected:
     void invariant();
 
-    ProgramHandler * handler;
+    std::shared_ptr< ProgramHandler > handler;
     FftParams params;
     cl_int2 * dataArray;
     cl_float2 * outArray;
@@ -40,7 +40,7 @@ protected:
 class AmFft: public FftInterface
 {
 public:
-    AmFft( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
+    AmFft( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
     
     ~AmFft() = default;
 
@@ -50,7 +50,7 @@ public:
 class FmFft: public FftInterface
 {
 public:
-    FmFft( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
+    FmFft( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
 
     ~FmFft() = default;
 
@@ -60,7 +60,7 @@ public:
 class FmFftSepNl: public FftInterface
 {
 public:
-    FmFftSepNl( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
+    FmFftSepNl( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
 
     ~FmFftSepNl() = default;
 
@@ -72,11 +72,11 @@ class FftCreator
 public:
     FftCreator();
 
-    explicit FftCreator( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
+    explicit FftCreator( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
 
-    ~FftCreator();
+    ~FftCreator() = default;
 
-    void makeFftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
+    void makeFftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
 
     bool hasFftInterface();
 
@@ -91,7 +91,7 @@ public:
     cl_float2 * getFftResult() const;
 
 private:
-    FftInterface * fft;
+    std::shared_ptr< FftInterface > fft;
 };
 
 #endif // GPU_FOURIER_H__

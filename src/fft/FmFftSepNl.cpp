@@ -6,7 +6,7 @@
 #   include <debug_computations.h>
 #endif
 
-FmFftSepNl::FmFftSepNl( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )  
+FmFftSepNl::FmFftSepNl( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )  
 :   FftInterface( handler, params, dataArray )
 {
     std::cout<<"FmFftSepNl c-tor!\n";

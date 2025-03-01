@@ -5,8 +5,6 @@
 #include <vector>
 #include <complex>
 #include <fstream>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 #include <types.h>
 #include <error.h>

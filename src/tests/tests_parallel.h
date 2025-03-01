@@ -8,9 +8,9 @@
 
 void RunAllTestsParallel( FftCreator & fft, const fs::path & testcases_dir );
 
-void RunAllTestsParallelV2( ProgramHandler * handler, const fs::path & testcases_dir );
+void RunAllTestsParallelV2( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir );
 
-void RunAllTestsParallelV3( ProgramHandler * handler, const fs::path & testcases_dir );
-void RunAllTestsParallelV4( ProgramHandler * handler, const fs::path & testcases_dir );
+void RunAllTestsParallelV3( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir );
+void RunAllTestsParallelV4( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir );
 
 #endif // TESTS_PARALLEL_H__

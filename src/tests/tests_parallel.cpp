@@ -25,7 +25,7 @@ void RunAllTestsParallel( FftCreator & fft, const fs::path & testcases_dir )
     pool.wait();
 }
 
-void RunAllTestsParallelV2( ProgramHandler * handler, const fs::path & testcases_dir )
+void RunAllTestsParallelV2( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir )
 {
     if( !handler )
     {
@@ -67,7 +67,7 @@ void RunAllTestsParallelV2( ProgramHandler * handler, const fs::path & testcases
 //         std::this_thread::sleep_for(std::chrono::seconds(2));
 //     }
 // };
-// void RunAllTestsParallelV3( ProgramHandler * handler, const fs::path & testcases_dir )
+// void RunAllTestsParallelV3( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir )
 // {
 //     size_t threads_size = 22;
 //     TaskQueue< Task > WorkQueue( 12 );
@@ -78,7 +78,7 @@ void RunAllTestsParallelV2( ProgramHandler * handler, const fs::path & testcases
 //     }
 // }
 
-void RunAllTestsParallelV3( ProgramHandler * handler, const fs::path & testcases_dir )
+void RunAllTestsParallelV3( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir )
 {
     if( !handler )
     {
@@ -177,7 +177,7 @@ void RunAllTestsParallelV3( ProgramHandler * handler, const fs::path & testcases
     pool.wait();
 }
 
-void RunAllTestsParallelV4( ProgramHandler * handler, const fs::path & testcases_dir )
+void RunAllTestsParallelV4( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir )
 {
     size_t threads_size = 22;
     BS::thread_pool pool;

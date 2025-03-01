@@ -9,24 +9,40 @@
 #include <cassert>
 #include <string>
 
+#include <memory>
+
+#include <types.h>
 #include <CLDefs.h>
+
+/** Hint for const:
+ * 
+ * shared_ptr<T> p;             ---> T * p;                                    : nothing is const
+ * const shared_ptr<T> p;       ---> T * const p;                              : p is const
+ * shared_ptr<const T> p;       ---> const T * p;       <=> T const * p;       : *p is const
+ * const shared_ptr<const T> p; ---> const T * const p; <=> T const * const p; : p and *p are const.
+ * 
+ */
 
 struct ProgramHandler
 {
-    cl::Platform    * const platform;
-    cl::Device      * const device;
-    cl::Context     * context;
-    cl::Program     * program;
+    const std::shared_ptr< cl::Platform >   platform;
+    const std::shared_ptr< cl::Device >     device;
+    std::shared_ptr< cl::Context >          context;
+    std::shared_ptr< cl::Program >          program;
+    // cl::Platform    * const platform;
+    // cl::Device      * const device;
+    // cl::Context     * context;
+    // cl::Program     * program;
 
-    ProgramHandler( cl::Platform * plat, cl::Device * dev );
+    ProgramHandler( const std::shared_ptr< cl::Platform > & platform_, const std::shared_ptr< cl::Device > & device_ );
 
-    ~ProgramHandler();
+    ~ProgramHandler() = default;
 
     cl_int
-    initializeDeviceWithKernelFile( std::string file_name );
+    initializeDeviceWithKernelFile( const fs::path & kernel_path );
 };
 
-ProgramHandler * 
+std::shared_ptr< ProgramHandler >
 makeProgramHandler( size_t platform_num, size_t device_num, std::string & error );
 
 #endif // PROGRAM_HANDLER_H__

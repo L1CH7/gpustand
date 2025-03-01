@@ -1,28 +1,28 @@
 #include "ProgramHandler.h"
 
-ProgramHandler::ProgramHandler( cl::Platform * plat, cl::Device * dev )
-:   platform( plat ),
-    device( dev )
+ProgramHandler::ProgramHandler( const std::shared_ptr< cl::Platform > & platform_, const std::shared_ptr< cl::Device > & device_ )
+:   platform( platform_ ),
+    device( device_ )
 {}
 
-ProgramHandler::~ProgramHandler()
-{
-    delete( platform );
-    delete( device );
-    delete( context );
-    delete( program );
-}
+// ProgramHandler::~ProgramHandler()
+// {
+//     delete( platform );
+//     delete( device );
+//     delete( context );
+//     delete( program );
+// }
 
 cl_int
-ProgramHandler::initializeDeviceWithKernelFile( std::string file_name )
+ProgramHandler::initializeDeviceWithKernelFile( const fs::path & kernel_path )
 {
     cl_int error = CL_SUCCESS;
 
-    std::ifstream kernel_file( file_name );
+    std::ifstream kernel_file( kernel_path );
     if( !kernel_file.is_open() )
     {
         std::cout << "File not opened" << std::endl;
-        assert( kernel_file.is_open() );
+        assert( 0 );
     }
     std::string kernel_code(
         std::istreambuf_iterator< char >{ kernel_file },
@@ -31,36 +31,41 @@ ProgramHandler::initializeDeviceWithKernelFile( std::string file_name )
     kernel_file.close();
 
     cl::Program::Sources sources;
-    sources.push_back({ kernel_code.c_str(), kernel_code.length() });
+    sources.push_back( { kernel_code.c_str(), kernel_code.length() } );
 
-    context = new cl::Context( *device );
-    program = new cl::Program( *context, sources );
+    context = std::make_shared< cl::Context >( *device );
+    program = std::make_shared< cl::Program >( *context, sources );
     try
     {
         error = program->build();
-        std::cout << "Build info:\n"
-                    << program->getBuildInfo< CL_PROGRAM_BUILD_LOG >( *device )
-                    << "\nEnd build info.\n";
+        std::stringstream info;
+
+        info << "Build info:\n"
+             << program->getBuildInfo< CL_PROGRAM_BUILD_LOG >( *device )
+             << "\nEnd build info.\n";
+        std::cout << info.str();
     }
     catch( cl::Error error )
     {
-        std::cerr << "ERROR in " << __func__ << ": " << error.what() << ", "
-                << getErrorString( error.err() ) << std::endl;
+        std::stringstream error_str;
+        error_str << "ERROR in " << __func__ << ": " << error.what() << ", "
+                  << getErrorString( error.err() ) << std::endl;\
+        std::cout << error_str.str();
         throw error;
     }
     return error;
 }
 
 
-ProgramHandler *
+std::shared_ptr< ProgramHandler >
 makeProgramHandler( size_t platform_num, size_t device_num, std::string & error )
 {
     std::vector< cl::Platform > platforms;
     cl::Platform::get( &platforms );
 
     std::ostringstream msg;
-    cl::Platform * platform;
-    cl::Device * device;
+    std::shared_ptr< cl::Platform > platform;
+    std::shared_ptr< cl::Device > device;
 
     if( platforms.empty() || platforms.size() <= platform_num )
     {
@@ -71,7 +76,7 @@ makeProgramHandler( size_t platform_num, size_t device_num, std::string & error 
     }
     else
     {
-        platform = new cl::Platform( platforms[ platform_num ] );
+        platform = std::make_shared< cl::Platform >( platforms[ platform_num ] );
         std::vector< cl::Device > devices;
         platform->getDevices( CL_DEVICE_TYPE_ALL, &devices );
         if( devices.empty() || devices.size() <= device_num )
@@ -79,11 +84,10 @@ makeProgramHandler( size_t platform_num, size_t device_num, std::string & error 
             msg << "Device [" << device_num
                 << "] not found. Total devices: " << devices.size() << "\n";
             error = msg.str();
-            delete platform; // cleanup
             return nullptr;
         }
         else
-            device = new cl::Device( devices[ device_num ] );
+            device = std::make_shared< cl::Device >( devices[ device_num ] );
     }
-    return new ProgramHandler( platform, device );
+    return std::make_shared< ProgramHandler >( platform, device );
 }

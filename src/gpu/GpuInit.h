@@ -9,8 +9,6 @@
 // При инициализации модуля указываются смещения целевых 
 // платформы и устройства в списках платформ и устройств; 
 // списки выдаются clinfo -l
-DeviceIdentity initGpuModule(
-    ProgramHandler * handler,
-    const std::string & kernel_file);
+DeviceIdentity initGpuModule( std::shared_ptr< ProgramHandler > handler, const fs::path & kernel_path );
 
 #endif // GPU_INIT_H__

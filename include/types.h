@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 struct DeviceIdentity {
     std::string name;

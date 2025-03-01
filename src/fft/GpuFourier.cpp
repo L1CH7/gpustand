@@ -6,8 +6,8 @@
 #   include <debug_computations.h>
 #endif
 
-FftInterface::FftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )   
-:   handler( std::move(handler) ),
+FftInterface::FftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )   
+:   handler( handler ),
     params( params ),
     dataArray( dataArray ),
     outArray( new cl_float2[params.nl * params.kgd * params.kgrs] )
@@ -21,8 +21,8 @@ FftInterface::~FftInterface()
         delete outArray;
 }
 
-FftInterface::FftInterface( ProgramHandler * handler )   
-:   handler( std::move(handler) ),
+FftInterface::FftInterface( std::shared_ptr< ProgramHandler > handler )   
+:   handler( handler ),
     params( {} ),
     dataArray( nullptr ),
     outArray( nullptr )
@@ -31,7 +31,7 @@ FftInterface::FftInterface( ProgramHandler * handler )
 
 void FftInterface::setParams( const FftParams & newParams )
 {
-    params = std::move(newParams);
+    params = newParams;
     if( outArray )
         delete outArray;
     outArray = new cl_float2[params.nl * params.kgd * params.kgrs];
@@ -72,14 +72,9 @@ FftInterface::invariant()
     }
 }
 
-FftCreator::FftCreator( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )
+FftCreator::FftCreator( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )
 {
     makeFftInterface( handler, params, dataArray );
-}
-
-FftCreator::~FftCreator()
-{
-    delete fft;
 }
 
 bool 
@@ -96,7 +91,6 @@ FftCreator::update( const FftParams & newParams, cl_int2 * newDataArray )
     else
     {
         auto handler = fft->handler;
-        delete fft;
         makeFftInterface( handler, newParams, newDataArray );
     }
 }
@@ -114,13 +108,10 @@ FftCreator::getFftResult() const
 }
 
 void
-FftCreator::makeFftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )   
+FftCreator::makeFftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )   
 {
-    if( fft )
-        delete fft;
-        
     if( params.is_am )
-        fft = new AmFft( handler, params, dataArray );
+        fft = std::make_shared< AmFft >( handler, params, dataArray );
     else
     {
         uint32_t N = 1 << params.log2N;
@@ -128,8 +119,8 @@ FftCreator::makeFftInterface( ProgramHandler * handler, const FftParams & params
         uint64_t maxBufferSize = handler->device->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
         
         if (midBufferSize > maxBufferSize)
-            fft = new FmFftSepNl( handler, params, dataArray );
+            fft = std::make_shared< FmFftSepNl >( handler, params, dataArray );
         else
-            fft = new FmFft( handler, params, dataArray );
+            fft = std::make_shared< FmFft >( handler, params, dataArray );
     }
 }

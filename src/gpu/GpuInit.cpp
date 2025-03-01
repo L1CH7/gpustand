@@ -1,19 +1,16 @@
 #include "GpuInit.h"
 #include <error.h>
 
-DeviceIdentity initGpuModule(
-    ProgramHandler * handler,
-    const std::string & kernel_file
-)
+DeviceIdentity initGpuModule( std::shared_ptr< ProgramHandler > handler, const fs::path & kernel_path )
 {
     std::cout << "--> " << __func__ << "("
-         << "\"" << kernel_file << "\")"
+         << "\"" << kernel_path.native() << "\")"
          << std::endl;
     try
     {
         if( handler )
         {
-            handler->initializeDeviceWithKernelFile(kernel_file);
+            handler->initializeDeviceWithKernelFile( kernel_path );
             return DeviceIdentity {
                 handler->device->getInfo<CL_DEVICE_NAME>(),
                 handler->device->getInfo<CL_DEVICE_VERSION>(),

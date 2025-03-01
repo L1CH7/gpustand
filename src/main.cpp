@@ -1,7 +1,7 @@
 #include <tests.h>
 #include <tests_parallel.h>
 
-ProgramHandler * Prepare( int argc, char ** argv, fs::path kernelfile )
+std::shared_ptr< ProgramHandler > Prepare( int argc, char ** argv, fs::path kernelfile )
 {
     // Choose your platform & device from `$ clinfo -l` (in my case platform_id refers to NVIDIA CUDA). 
     size_t platform_id = 0;
@@ -27,7 +27,7 @@ ProgramHandler * Prepare( int argc, char ** argv, fs::path kernelfile )
     std::string error;
 
     fs::path root_dir( WORKSPACE );
-    ProgramHandler * handler = makeProgramHandler( platform_id, device_id, error );
+    std::shared_ptr< ProgramHandler > handler = makeProgramHandler( platform_id, device_id, error );
     if( error != "")
     {
         std::cerr << "ERROR: "_red << error << std::endl;
@@ -41,7 +41,7 @@ int main( int argc, char ** argv )
 {
     fs::path root_dir( WORKSPACE );
 
-    ProgramHandler * handler = Prepare( argc, argv, root_dir / "src/fft/GpuKernels.cl" );
+    std::shared_ptr< ProgramHandler > handler = Prepare( argc, argv, root_dir / "src/fft/GpuKernels.cl" );
     if( !handler )
         exit( 1 );
 
@@ -55,14 +55,14 @@ int main( int argc, char ** argv )
     //     fs::path test_dir = root_dir / "testcases/FM" / "000"; // /path/to/test/dir
     //     RunSingleTest( fft, test_dir );
     // }
-    // {   // Single test run example. All datafiles must be in same directory(test_dir)
-    //     fs::path test_dir = root_dir / "testcases/AM" / "000"; // /path/to/test/dir
-    //     RunSingleTest( fft, test_dir );
-    // }
-    // {   // Single test run example. All datafiles must be in same directory(test_dir)
-    //     fs::path test_dir = root_dir / "testcases/AM" / "048"; // /path/to/test/dir
-    //     RunSingleTest( fft, test_dir );
-    // }
+    {   // Single test run example. All datafiles must be in same directory(test_dir)
+        fs::path test_dir = root_dir / "testcases/AM" / "000"; // /path/to/test/dir
+        RunSingleTest( fft, test_dir );
+    }
+    {   // Single test run example. All datafiles must be in same directory(test_dir)
+        fs::path test_dir = root_dir / "testcases/AM" / "001"; // /path/to/test/dir
+        RunSingleTest( fft, test_dir );
+    }
     // {   // Single test run example. All datafiles must be in same directory(test_dir)
     //     fs::path test_dir = root_dir / "testcases/AM" / "001"; // /path/to/test/dir
     //     RunSingleTest( fft, test_dir );
@@ -82,11 +82,10 @@ int main( int argc, char ** argv )
     //     fs::path testcases = root_dir / "testcases/FM_copies"; // /path/to/all/testcases/dir
     //     RunAllTestsParallelV2( handler, testcases );
     // }
-    {
-        fs::path testcases = root_dir / "testcases/FM_copies";
-        RunAllTestsParallelV4( handler, testcases );   
-    }
-    delete handler;
+    // {
+    //     fs::path testcases = root_dir / "testcases/FM_copies";
+    //     RunAllTestsParallelV4( handler, testcases );   
+    // }
 
     return 0;
 }

@@ -148,9 +148,9 @@ if __name__ == "__main__":
     plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,0], testpath_fm / 'ftps.json', paramspath, 'Polar0', nl)
     plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,1], testpath_fm / 'result/data.json', paramspath, 'Polar0', nl)
 
-    # testpath_am = Path('..') / 'testcases' / 'AM' / '000'
-    # paramspath = testpath_am / 'in_args.json'
-    # nl=0
-    # plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,0], testpath_am / 'ftps.json', paramspath, 'Polar0', nl)
-    # plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,1], testpath_am / 'result/data.json', paramspath, 'Polar0', nl)
+    testpath_am = Path('..') / 'testcases' / 'AM' / '000'
+    paramspath = testpath_am / 'in_args.json'
+    nl=0
+    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,0], testpath_am / 'ftps.json', paramspath, 'Polar0', nl)
+    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,1], testpath_am / 'result/data.json', paramspath, 'Polar0', nl)
     plt.show()

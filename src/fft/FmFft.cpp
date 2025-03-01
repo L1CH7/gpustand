@@ -6,7 +6,7 @@
 #   include <debug_computations.h>
 #endif
 
-FmFft::FmFft( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )  
+FmFft::FmFft( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )  
 :   FftInterface( handler, params, dataArray )
 {
     std::cout<<"FmFft c-tor!\n";
