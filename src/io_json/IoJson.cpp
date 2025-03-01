@@ -14,7 +14,7 @@ from_json( const json & j, FftParams & params )
     params.n1grs        = j["n1grs"];
     params.ndec         = j["ndec"];
     params.dlstr        = j["dlstr"];
-    params.is_am        = (int)j["is_am"];
+    params.is_am        = static_cast< int >( j["is_am"] );
 }
 
 FftParams

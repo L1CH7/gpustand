@@ -179,34 +179,44 @@ void RunAllTestsParallelV3( std::shared_ptr< ProgramHandler > handler, const fs:
 
 void RunAllTestsParallelV4( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir )
 {
-    size_t threads_size = 22;
-    BS::thread_pool pool;
-    size_t i = 0;
     std::mutex _mut;
-    pool.wait();
-    for( i = 0; i < threads_size; ++i )
+
+    // for thread safety initialize vector and use vector::operator[] or vector::at(). 
+    // vector::push_back is unsafe!!
+    std::size_t threads_size = std::jthread::hardware_concurrency();
+    std::vector< std::shared_ptr < FftCreator > > fft_instances( threads_size, nullptr );
+
+    BS::light_thread_pool pool( 
+        threads_size,
+        [handler, &fft_instances]( std::size_t thread_id ){ 
+            FftParams dummy_params{.is_am=false,.nl=1,.kgrs=1,.kgd=1};
+            fft_instances.at( thread_id ) = std::make_shared< FftCreator >( handler, dummy_params, nullptr ); 
+        } 
+    );
+    
+    // std::vector< std::future< std::size_t > > futures;
+    // futures.reserve( tasks_size );
+
+
+    for( auto & testcase : fs::directory_iterator{ testcases_dir } )
     {
-        // while( pool.get_tasks_running() >= pool.get_thread_count() ){};
-        pool.detach_task( [&_mut,i](  ){ 
-            {
-                std::lock_guard< std::mutex > _lock( _mut );
-                std::cout << "penis #" << i << '\n';
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-        } );
+        if( fs::is_directory( testcase ) )
+        {
+            fs::path test_dir = testcase.path();
+            auto task = [ &fft_instances, test_dir ]() { 
+                std::size_t thread_id = BS::this_thread::get_index().value_or(0);
+                // auto fft_instance = fft_instances.at( thread_id );
+                RunSingleTest( *fft_instances.at( thread_id ), test_dir );
+            };
+            pool.detach_task( task );
+        }
     }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(600));
-    std::cout << "12 done!\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    // std::cout << "24 done!\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    // std::cout << "36 done!\n";
     pool.wait();
-    // pool.purge();
-    // pool.submit_sequence(0,7,[&_mut]( const size_t & i ){ 
-    //         std::lock_guard< std::mutex > _lock( _mut );
-    //         std::cout << "penis #" << i << '\n';
-    //     } ).wait();
 
+    // BS::multi_future< void > futures;
+    // std::cout << "submitting tasks...\n";
+    // auto bs_futures = pool.submit_sequence( 0, 33, task );
+    // std::cout << "waiting tasks...\n";
+    // bs_futures.wait();
+    // std::cout << "tasks DONE!\n";
 }

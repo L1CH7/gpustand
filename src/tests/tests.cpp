@@ -2,21 +2,22 @@
 
 void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
 {
-    FftParams params = readJsonParams( paths.params_path );
-    params.shgd *= params.ndec;
-    if( params.is_am )
-    {
-        std::cout << "AM!!!\n";
-        params.log2N = ( uint32_t )std::log2( params.true_nihs ) + 1;
-        params.mseq = std::vector< int >();
-    }
-    else
-    {
-        std::cout << "FM!!!\n";
-        params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
-        params.mseq = readVectorFromJsonFile< cl_int >( paths.mseq_path );
-        params.mseq.resize( 1 << params.log2N, 0 ); // mseq should be N elems, filled with zeroes
-    }
+    FftParams params = readJsonParams( paths.params_path, paths.mseq_path );
+    // FftParams params = readJsonParams( paths.params_path );
+    // params.shgd *= params.ndec;
+    // if( params.is_am )
+    // {
+    //     std::cout << "AM!!!\n";
+    //     params.log2N = ( uint32_t )std::log2( params.true_nihs ) + 1;
+    //     params.mseq = std::vector< int >();
+    // }
+    // else
+    // {
+    //     std::cout << "FM!!!\n";
+    //     params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
+    //     params.mseq = readVectorFromJsonFile< cl_int >( paths.mseq_path );
+    //     params.mseq.resize( 1 << params.log2N, 0 ); // mseq should be N elems, filled with zeroes
+    // }
 
     // Read input vector and cast it to cl_int2
     auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< int > >( paths.input_path );
@@ -110,11 +111,18 @@ void TestTemplate1Polar( FftCreator & fft, const Paths & paths, std::string pola
 
 void RunSingleTest( FftCreator & fft, const fs::path & test_dir )
 {
-    std::cout << "test:" << test_dir.c_str() << '\n';
+    // std::mutex m_;
+    fs::path result_dir;
+    // {
+        // std::scoped_lock l( m_ );
+        std::stringstream ss;
+        ss << "test:" << test_dir.c_str() << '\n';
+        std::cout << ss.str();
 
-    fs::path result_dir     = test_dir      / "result";
-    if( !fs::exists( result_dir ) )
-        fs::create_directory( result_dir );
+        result_dir = test_dir      / "result";
+        if( !fs::exists( result_dir ) )
+            fs::create_directory( result_dir );
+    // }
 
 #   ifdef ENABLE_DEBUG_COMPUTATIONS
     // print all middle-events to result dir!

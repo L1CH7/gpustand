@@ -7,6 +7,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#include <thread>
+
 struct DeviceIdentity {
     std::string name;
     std::string version;

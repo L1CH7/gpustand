@@ -45,24 +45,24 @@ int main( int argc, char ** argv )
     if( !handler )
         exit( 1 );
 
-    FftCreator fft( handler, FftParams{ 
-        .nl=1, 
-        .kgrs=1,
-        .kgd=1
-        }, nullptr );
+    // FftCreator fft( handler, FftParams{ 
+    //     .nl=1, 
+    //     .kgrs=1,
+    //     .kgd=1
+    //     }, nullptr );
 
     // {   // Single test run example. All datafiles must be in same directory(test_dir)
-    //     fs::path test_dir = root_dir / "testcases/FM" / "000"; // /path/to/test/dir
+    //     fs::path test_dir = root_dir / "testcases/FM" / "004"; // /path/to/test/dir
     //     RunSingleTest( fft, test_dir );
     // }
-    {   // Single test run example. All datafiles must be in same directory(test_dir)
-        fs::path test_dir = root_dir / "testcases/AM" / "000"; // /path/to/test/dir
-        RunSingleTest( fft, test_dir );
-    }
-    {   // Single test run example. All datafiles must be in same directory(test_dir)
-        fs::path test_dir = root_dir / "testcases/AM" / "001"; // /path/to/test/dir
-        RunSingleTest( fft, test_dir );
-    }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/AM" / "000"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
+    // {   // Single test run example. All datafiles must be in same directory(test_dir)
+    //     fs::path test_dir = root_dir / "testcases/AM" / "001"; // /path/to/test/dir
+    //     RunSingleTest( fft, test_dir );
+    // }
     // {   // Single test run example. All datafiles must be in same directory(test_dir)
     //     fs::path test_dir = root_dir / "testcases/AM" / "001"; // /path/to/test/dir
     //     RunSingleTest( fft, test_dir );
@@ -78,12 +78,13 @@ int main( int argc, char ** argv )
     //     RunAllTests( fft, testcases );
     // }
 
-    // {   // All testcases run example. 
-    //     fs::path testcases = root_dir / "testcases/FM_copies"; // /path/to/all/testcases/dir
-    //     RunAllTestsParallelV2( handler, testcases );
-    // }
+    {   // All testcases run example. 
+        fs::path testcases = root_dir / "testcases/FM_copies"; // /path/to/all/testcases/dir
+        // fs::path testcases = root_dir / "testcases/FM"; // /path/to/all/testcases/dir
+        RunAllTestsParallelV4( handler, testcases );
+    }
     // {
-    //     fs::path testcases = root_dir / "testcases/FM_copies";
+    //     fs::path testcases = root_dir / "testcases/FM";
     //     RunAllTestsParallelV4( handler, testcases );   
     // }
 

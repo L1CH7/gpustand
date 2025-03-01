@@ -110,6 +110,9 @@ FftCreator::getFftResult() const
 void
 FftCreator::makeFftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )   
 {
+    if( fft )
+        fft.reset(); // deletes pointer
+
     if( params.is_am )
         fft = std::make_unique< AmFft >( handler, params, dataArray );
     else

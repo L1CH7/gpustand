@@ -70,7 +70,7 @@ public:
 class FftCreator
 {
 public:
-    FftCreator();
+    FftCreator() = default;
 
     explicit FftCreator( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
 
