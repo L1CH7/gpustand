@@ -73,15 +73,19 @@ int main( int argc, char ** argv )
     //     RunSingleTest( fft, test_dir );
     // }
 
-    {   // All testcases run example. 
-        fs::path testcases = root_dir / "testcases/AM"; // /path/to/all/testcases/dir
-        RunAllTests( fft, testcases );
-    }
-
     // {   // All testcases run example. 
     //     fs::path testcases = root_dir / "testcases/AM"; // /path/to/all/testcases/dir
+    //     RunAllTests( fft, testcases );
+    // }
+
+    // {   // All testcases run example. 
+    //     fs::path testcases = root_dir / "testcases/FM_copies"; // /path/to/all/testcases/dir
     //     RunAllTestsParallelV2( handler, testcases );
     // }
+    {
+        fs::path testcases = root_dir / "testcases/FM_copies";
+        RunAllTestsParallelV4( handler, testcases );   
+    }
     delete handler;
 
     return 0;

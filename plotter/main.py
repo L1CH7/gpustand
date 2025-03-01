@@ -142,7 +142,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(60, 90), constrained_layout=True)
     grd = gsp.GridSpec(nrows=2, ncols=2, figure=fig)
 
-    testpath_fm = Path('..') / 'testcases' / 'FM' / '006'
+    testpath_fm = Path('..') / 'testcases' / 'FM' / '000'
     paramspath = testpath_fm / 'in_args.json'
     nl=0
     plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,0], testpath_fm / 'ftps.json', paramspath, 'Polar0', nl)

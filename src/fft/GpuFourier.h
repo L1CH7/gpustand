@@ -14,9 +14,13 @@ class FftInterface
 public:
     FftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
 
-    FftInterface(){}
+    FftInterface( ProgramHandler * handler );
 
     ~FftInterface();
+
+    void setParams( const FftParams & newParams );
+
+    void setDataArray( cl_int2 * newDataArray );
 
     void update( const FftParams & newParams, cl_int2 * newDataArray );
 
@@ -66,11 +70,19 @@ public:
 class FftCreator
 {
 public:
-    FftCreator() = delete;
+    FftCreator();
 
     explicit FftCreator( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
 
     ~FftCreator();
+
+    void makeFftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
+
+    bool hasFftInterface();
+
+    // void setParams( const FftParams & newParams );
+
+    // void setDataArray( cl_int2 * newDataArray );
 
     void update( const FftParams & newParams, cl_int2 * newDataArray );
 
@@ -79,8 +91,6 @@ public:
     cl_float2 * getFftResult() const;
 
 private:
-    void makeFftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray );
-    
     FftInterface * fft;
 };
 

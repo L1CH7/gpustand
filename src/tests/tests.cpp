@@ -1,26 +1,4 @@
-#ifndef TESTS_H__
-#define TESTS_H__
-
-#include <types.h>
-#include <CLDefs.h>
-#include <GpuFourier.h>
-#include <GpuInit.h>
-#include <IoJson.h>
-#include <config.h>
-
-#ifdef ENABLE_DEBUG_COMPUTATIONS
-#   include <debug_computations.h> 
-    // std::unique_ptr< fs::path > events_path = nullptr;
-#endif
-
-struct Paths
-{
-    fs::path params_path;
-    fs::path input_path;
-    fs::path mseq_path;
-    fs::path result_data_path;
-    fs::path result_time_path;
-};
+#include "tests.h"
 
 void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
 {
@@ -36,17 +14,12 @@ void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
     {
         std::cout << "FM!!!\n";
         params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
-        std::ifstream ifs( paths.mseq_path );
-        json j = json::parse( ifs );
-        params.mseq = std::vector< int >( j );
+        params.mseq = readVectorFromJsonFile< cl_int >( paths.mseq_path );
         params.mseq.resize( 1 << params.log2N, 0 ); // mseq should be N elems, filled with zeroes
     }
 
     // Read input vector and cast it to cl_int2
-    std::ifstream ifs( paths.input_path );
-    json j = json::parse( ifs );
-    std::vector< std::complex< int > > polar0( j["polar0"] ), polar1( j["polar1"] );
-
+    auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< int > >( paths.input_path );
     auto polar0_ptr = reinterpret_cast< cl_int2 * >( polar0.data() );
     auto polar1_ptr = reinterpret_cast< cl_int2 * >( polar1.data() );
 
@@ -136,5 +109,3 @@ void RunAllTests( FftCreator & fft, const fs::path & testcases_dir )
         }
     }
 }
-
-#endif // TESTS_H__

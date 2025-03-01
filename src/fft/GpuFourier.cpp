@@ -21,15 +21,34 @@ FftInterface::~FftInterface()
         delete outArray;
 }
 
+FftInterface::FftInterface( ProgramHandler * handler )   
+:   handler( std::move(handler) ),
+    params( {} ),
+    dataArray( nullptr ),
+    outArray( nullptr )
+{
+}
+
+void FftInterface::setParams( const FftParams & newParams )
+{
+    params = std::move(newParams);
+    if( outArray )
+        delete outArray;
+    outArray = new cl_float2[params.nl * params.kgd * params.kgrs];
+}
+
+void FftInterface::setDataArray( cl_int2 * newDataArray )
+{
+    dataArray = newDataArray;
+    // Assumed that params are defined
+    invariant();
+}
+
 void
 FftInterface::update( const FftParams & newParams, cl_int2 * newDataArray )
 {
-    params = std::move(newParams);
-    // if( dataArray )
-    //     delete dataArray;
-    dataArray = newDataArray;
-
-    outArray = new cl_float2[params.nl * params.kgd * params.kgrs];
+    setParams( newParams );
+    setDataArray( newDataArray );
 }
 
 void
@@ -63,6 +82,12 @@ FftCreator::~FftCreator()
     delete fft;
 }
 
+bool 
+FftCreator::hasFftInterface()
+{
+    return fft != nullptr;
+}
+
 void
 FftCreator::update( const FftParams & newParams, cl_int2 * newDataArray )
 {
@@ -91,6 +116,9 @@ FftCreator::getFftResult() const
 void
 FftCreator::makeFftInterface( ProgramHandler * handler, const FftParams & params, cl_int2 * dataArray )   
 {
+    if( fft )
+        delete fft;
+        
     if( params.is_am )
         fft = new AmFft( handler, params, dataArray );
     else

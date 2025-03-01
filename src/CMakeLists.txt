@@ -1,9 +1,11 @@
 include_directories(
+    tests
     io_json
     gpu
     fft
 )
 
+add_subdirectory(tests)
 add_subdirectory(io_json)
 add_subdirectory(gpu)
 add_subdirectory(fft)
@@ -15,10 +17,9 @@ target_sources(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    tests
     io_json
     gpu
     fft
     OpenCL::OpenCL
-    # ${Boost_LIBRARIES}
-    # BS_thread_pool
 )
