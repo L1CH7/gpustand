@@ -3,42 +3,19 @@
 
 #include <iostream>
 #include <vector>
-#include <complex>
 #include <fstream>
 
-#include <types.h>
 #include <error.h>
 #include <CLDefs.h>
 
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
+#include <JsonHelper.h>
+
 
 FftParams
 readJsonParams( const fs::path & filepath );
 
 FftParams
 readJsonParams( const fs::path & filepath, const fs::path & mseq_path );
-
-// Methods to convert std::complex from/to nlohmann::json
-// It is necessary to write them in corresponding namespace - std
-namespace std
-{
-    template< typename T >
-    void 
-    to_json( json & j, const std::complex< T > & c )
-    {
-        // j = json{ [ c.real(), c.imag() ] };
-        j[0] = c.real();
-        j[1] = c.imag();
-    }
-
-    template< typename T >
-    void 
-    from_json( const json & j, std::complex< T > & c )
-    {
-        c = std::complex( j[0], j[1] );
-    }
-}
 
 template< typename T >
 void 
@@ -86,6 +63,6 @@ void
 writeTimeStampsToFile( const fs::path &, TimeResult );
 
 void
-writeTimeStampsToJsonFile( const fs::path &, TimeResult );
+writeReportToJsonFile( const fs::path & filepath, FftParams params, TimeResult t0, TimeResult t1 )
 
 #endif // IO_JSON_TESTS_H__
