@@ -46,7 +46,7 @@ readJsonParams( const fs::path & filepath, const fs::path & mseq_path )
 }
 
 void
-writeTimeStampsToJsonFile( const fs::path & filepath, TimeResult t )
+writeTimeStampsToJsonFile( const fs::path & filepath, const TimeResult & t )
 {
     std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
@@ -60,7 +60,7 @@ writeTimeStampsToJsonFile( const fs::path & filepath, TimeResult t )
 
 // Report = times of each polars + params
 void
-writeReportToJsonFile( const fs::path & filepath, FftParams params, TimeResult t0, TimeResult t1 )
+writeReportToJsonFile( const fs::path & filepath, const FftParams & params, const TimeResult & t0, const TimeResult & t1 )
 {
     std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
