@@ -7,6 +7,7 @@
 #include <GpuInit.h>
 #include <IoJson.h>
 #include <config.h>
+#include <error.h>
 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
 #   include <debug_computations.h> 

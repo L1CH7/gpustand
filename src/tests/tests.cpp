@@ -3,23 +3,7 @@
 void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
 {
     FftParams params = readJsonParams( paths.params_path, paths.mseq_path );
-    // FftParams params = readJsonParams( paths.params_path );
-    // params.shgd *= params.ndec;
-    // if( params.is_am )
-    // {
-    //     std::cout << "AM!!!\n";
-    //     params.log2N = ( uint32_t )std::log2( params.true_nihs ) + 1;
-    //     params.mseq = std::vector< int >();
-    // }
-    // else
-    // {
-    //     std::cout << "FM!!!\n";
-    //     params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
-    //     params.mseq = readVectorFromJsonFile< cl_int >( paths.mseq_path );
-    //     params.mseq.resize( 1 << params.log2N, 0 ); // mseq should be N elems, filled with zeroes
-    // }
 
-    // Read input vector and cast it to cl_int2
     auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< int > >( paths.input_path );
     auto polar0_ptr = reinterpret_cast< cl_int2 * >( polar0.data() );
     auto polar1_ptr = reinterpret_cast< cl_int2 * >( polar1.data() );
@@ -27,12 +11,13 @@ void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
     // FftCreator fft( handler, params, polar0_ptr );
     fft.update( params, polar0_ptr );
     auto times0 = fft.compute();
+    polar0.clear();
     auto res0_ptr = fft.getFftResult();
 
     fft.update( params, polar1_ptr );
     auto times1 = fft.compute();
+    polar1.clear();
     auto res1_ptr = fft.getFftResult();
-
 
     // Get output cl_float2 array ant cast it to vector
     size_t res_size = params.nl * params.kgd * params.kgrs;
@@ -62,7 +47,8 @@ void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
     //     resv1rays[i] = std::vector< std::complex< float > >( res1_complex_ptr + offset, res1_complex_ptr + offset + step );
     //     j_out["Polar1"][ray] = resv1rays[i];
     // }
-
+    resv0rays.clear();
+    resv1rays.clear();
     std::ofstream ofs( paths.result_data_path );
     ofs << j_out.dump(4);
     // writeTimeStampsToFile( paths.result_time_path.parent_path() / "time0.out", times0 );
@@ -120,8 +106,9 @@ void RunSingleTest( FftCreator & fft, const fs::path & test_dir )
         std::cout << ss.str();
 
         result_dir = test_dir      / "result";
-        if( !fs::exists( result_dir ) )
-            fs::create_directory( result_dir );
+        if( fs::exists( result_dir ) )
+            fs::remove_all( result_dir );
+        fs::create_directory( result_dir );
     // }
 
 #   ifdef ENABLE_DEBUG_COMPUTATIONS
@@ -144,7 +131,7 @@ void RunAllTests( FftCreator & fft, const fs::path & testcases_dir )
 {
     // if( !handler )
     // {
-    //     std::cout << "No program handler created for tests\n"_red;
+    //     std::cout << error_str( "No program handler created for tests\n" );
     // }
 
     for( auto & testcase : fs::directory_iterator{ testcases_dir } )

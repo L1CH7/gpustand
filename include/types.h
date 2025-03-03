@@ -10,10 +10,10 @@ namespace fs = std::filesystem;
 #include <thread>
 
 struct DeviceIdentity {
-    std::string name;
-    std::string version;
-    std::string plat_name;
-    std::string plat_version;
+    std::string device_name;
+    std::string device_version;
+    std::string platform_name;
+    std::string platform_version;
 };
 
 struct FftParams

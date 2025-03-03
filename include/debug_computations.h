@@ -31,7 +31,7 @@ writeBufferToJsonFile( const fs::path & filepath, cl::CommandQueue & queue, cl::
         NULL, NULL );     
 
     if( events_path == nullptr )   
-        std::cout << "Path for printing buffer not initialized!\n"_red;
+        std::cout << error_str( "Path for printing buffer not initialized!\n" );
     else
         writeVectorToJsonFile( (*events_path) / filepath, out );
 }
@@ -46,7 +46,7 @@ writePtrArrayToJsonFile( const fs::path & filepath, Data_Tp * _array, size_t _si
     std::vector< Vector_Tp > out( _begin, _begin + _size );         
 
     if( events_path == nullptr )   
-        std::cout << "Path for printing buffer not initialized!\n"_red;
+        std::cout << error_str( "Path for printing buffer not initialized!\n" );
     else
         writeVectorToJsonFile( (*events_path) / filepath, out );
 }

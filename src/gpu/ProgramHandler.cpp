@@ -1,17 +1,10 @@
 #include "ProgramHandler.h"
+#include <error.h>
 
 ProgramHandler::ProgramHandler( const std::shared_ptr< cl::Platform > & platform_, const std::shared_ptr< cl::Device > & device_ )
 :   platform( platform_ ),
     device( device_ )
 {}
-
-// ProgramHandler::~ProgramHandler()
-// {
-//     delete( platform );
-//     delete( device );
-//     delete( context );
-//     delete( program );
-// }
 
 cl_int
 ProgramHandler::initializeDeviceWithKernelFile( const fs::path & kernel_path )
@@ -47,10 +40,10 @@ ProgramHandler::initializeDeviceWithKernelFile( const fs::path & kernel_path )
     }
     catch( cl::Error error )
     {
-        std::stringstream error_str;
-        error_str << "ERROR in " << __func__ << ": " << error.what() << ", "
-                  << getErrorString( error.err() ) << std::endl;\
-        std::cout << error_str.str();
+        std::stringstream msg;
+        msg << "ERROR in " << __func__ << ": " << error.what() << ", "
+                  << getErrorString( error.err() ) << std::endl;
+        std::cout << error_str( msg.str() );
         throw error;
     }
     return error;

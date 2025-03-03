@@ -56,18 +56,18 @@ FftInterface::invariant()
 {
     if( handler == nullptr )
     {
-        PRINT_ERROR("No OpenCL handler found");
+        std::cerr << error_str( "No OpenCL handler found" );
         assert(0);
     }
     if( params.nl < 1 || params.kgd < 1 || params.kgrs < 1 )
     {
-        PRINT_ERROR("Incorrect params");
+        std::cerr << error_str( "Incorrect params" );
         assert(0);
     }
     // if( dataArray.size() < params.samples_num || ( !params.is_am && params.mseq.size() < params.true_nihs ) )
     if( ( !params.is_am && params.mseq.size() < params.true_nihs ) )
     {
-        PRINT_ERROR("Not enough data");
+        std::cerr << error_str( "Not enough data" );
         assert(0);
     }
 }

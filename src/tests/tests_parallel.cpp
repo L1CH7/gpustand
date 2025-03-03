@@ -4,7 +4,7 @@ void RunAllTestsParallel( FftCreator & fft, const fs::path & testcases_dir )
 {
     // if( !handler )
     // {
-    //     std::cout << "No program handler created for tests\n"_red;
+    //     std::cout << error_str( "No program handler created for tests\n" );
     // }
 
     BS::thread_pool pool;
@@ -29,7 +29,7 @@ void RunAllTestsParallelV2( std::shared_ptr< ProgramHandler > handler, const fs:
 {
     if( !handler )
     {
-        std::cout << "No program handler created for tests\n"_red;
+        std::cout << error_str( "No program handler created for tests\n" );
     }
 
     BS::thread_pool pool;
@@ -82,7 +82,7 @@ void RunAllTestsParallelV3( std::shared_ptr< ProgramHandler > handler, const fs:
 {
     if( !handler )
     {
-        std::cout << "No program handler created for tests\n"_red;
+        std::cout << error_str( "No program handler created for tests\n" );
     }
 
     BS::thread_pool pool;

@@ -1,24 +1,29 @@
 from pathlib import Path
 import matplotlib.pyplot as plt
 from functools import cmp_to_key
+from datetime import datetime
 import numpy as np
 import json
 
 def compare_pairs(x, y):
-    return x[0] - y[0]
+    return x[2] - y[2]
 
-def plot_sorted_pairs(time_pairs):
+def plot_sorted_pairs(time_pairs, p:Path):
     time_pairs = sorted(time_pairs, key=cmp_to_key(compare_pairs))
-    total_starts = [pair[0] for pair in time_pairs]
-    total_ends = [pair[1] for pair in time_pairs]
-    fft_starts = [pair[2] for pair in time_pairs]
-    fft_ends = [pair[3] for pair in time_pairs]
+    # np_time_pairs = np.asarray(time_pairs)
+    start_point = min(pair[0] for pair in time_pairs)
+
+    total_starts = [pair[0]-start_point for pair in time_pairs]
+    total_ends = [pair[1]-start_point for pair in time_pairs]
+    fft_starts = [pair[2]-start_point for pair in time_pairs]
+    fft_ends = [pair[3]-start_point for pair in time_pairs]
 
     # Создание индексов для оси Y
     indices = np.arange(len(time_pairs))
 
     # Создание фигуры и осей
-    fig, ax = plt.subplots()
+    # fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(19, 13), constrained_layout=True)
 
     # Рисование линий для каждой пары
     for i in range(len(time_pairs)):
@@ -26,16 +31,18 @@ def plot_sorted_pairs(time_pairs):
         ax.plot([fft_starts[i], fft_ends[i]], [indices[i], indices[i]], color='r')
 
     # Установка меток осей
-    ax.set_xlabel('time')
-    ax.set_ylabel('test_idx')
+    ax.set_xlabel(f'time(ms, total={max(total_ends)})')
+    ax.set_ylabel(f'tests(total={len(time_pairs)})')
     ax.set_title('times_graph')
 
     # Показ графика
+    plt.grid()
+    plt.savefig(p/f'report{datetime.now().time()}.png', bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":
     testcases = Path("testcases") / "FM"
-    testcases = Path("testcases") / "FM_copies"
+    # testcases = Path("testcases") / "FM_copies"
     testcases.mkdir(parents=True, exist_ok=True)
     report_path = testcases / "report.txt"
     report = report_path.open("w")
@@ -63,4 +70,4 @@ if __name__ == "__main__":
             )
             time_pairs.append((times['total']['start'],times['total']['end'],times['fft']['start'],times['fft']['end']))
 
-    plot_sorted_pairs(time_pairs)
+    plot_sorted_pairs(time_pairs, testcases)

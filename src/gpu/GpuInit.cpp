@@ -11,19 +11,18 @@ DeviceIdentity initGpuModule( std::shared_ptr< ProgramHandler > handler, const f
         if( handler )
         {
             handler->initializeDeviceWithKernelFile( kernel_path );
-            return DeviceIdentity {
-                handler->device->getInfo<CL_DEVICE_NAME>(),
-                handler->device->getInfo<CL_DEVICE_VERSION>(),
-                handler->platform->getInfo<CL_PLATFORM_NAME>(),
-                handler->platform->getInfo<CL_PLATFORM_VERSION>()
+            return DeviceIdentity{
+                .device_name = handler->device->getInfo<CL_DEVICE_NAME>(),
+                .device_version = handler->device->getInfo<CL_DEVICE_VERSION>(),
+                .platform_name = handler->platform->getInfo<CL_PLATFORM_NAME>(),
+                .platform_version = handler->platform->getInfo<CL_PLATFORM_VERSION>()
             };
         }
-        PRINT_ERROR("No handler created");
+        std::cerr << error_str( "No handler created" );
         return{};
     }
     catch (cl::Error err) {
-        std::string err_str = "No handler created" + std::string(err.what());
-        PRINT_ERROR(err_str);
+        std::cerr << error_str( "No handler created" + std::string(err.what()) );
         std::cerr << "No handler created: " << err.what() << std::endl;
         throw err;
     }

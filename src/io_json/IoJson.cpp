@@ -23,7 +23,7 @@ readJsonParams( const fs::path & filepath )
     std::ifstream ifs( filepath );
     if( !ifs )
     {
-        std::cerr << "Param file not opened"_red << std::endl;
+        std::cerr << error_str( "Param file not opened" ) << std::endl;
         return FftParams{ .nl = static_cast< uint >( -1 ) };
     }
     json j = json::parse( ifs );
@@ -37,7 +37,7 @@ readJsonParams( const fs::path & filepath, const fs::path & mseq_path )
     std::ifstream ifs( filepath );
     if( !ifs )
     {
-        std::cerr << "Param file not opened"_red << std::endl;
+        std::cerr << error_str( "Param file not opened" ) << std::endl;
         return FftParams{ .nl = static_cast< uint >( -1 ) };
     }
     json j = json::parse( ifs );
@@ -66,7 +66,7 @@ writeTimeStampsToFile( const fs::path & filepath, TimeResult t )
 {
     std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
-        std::cerr << "TimeResult file not opened"_red << std::endl;
+        std::cerr << error_str( "TimeResult file not opened" ) << std::endl;
         return;
     }
     char * line = new char[100];
@@ -120,7 +120,7 @@ writeTimeStampsToJsonFile( const fs::path & filepath, TimeResult t )
 {
     std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
-        std::cerr << "TimeResult file not opened"_red << std::endl;
+        std::cerr << error_str( "TimeResult file not opened" ) << std::endl;
         return;
     }
     auto get_stamps = []( uint64_t _start, uint64_t _end )
