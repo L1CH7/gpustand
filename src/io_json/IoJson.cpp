@@ -60,7 +60,7 @@ writeTimeStampsToJsonFile( const fs::path & filepath, const TimeResult & t )
 
 // Report = times of each polars + params
 void
-writeReportToJsonFile( const fs::path & filepath, const FftParams & params, const TimeResult & t0, const TimeResult & t1 )
+writeReportToJsonFile( const fs::path & filepath, const std::string & report_path, const uint8_t polar, const FftParams & params, const TimeResult & t )
 {
     std::ofstream ofs( filepath, std::ios::trunc );
     if (!ofs.is_open()) {
@@ -68,9 +68,12 @@ writeReportToJsonFile( const fs::path & filepath, const FftParams & params, cons
         return;
     }
     json j;
-    j["params"] = json(params);
-    j["time"]["polar0"] = json(t0);
-    j["time"]["polar1"] = json(t1);
-    ofs << j.dump(4);
+    j["report_path"]    = report_path;
+    j["polar"]          = polar;
+    j["params"]         = json( params );
+    j["time"]           = json( t );
+    // j["time"]["polar0"] = json(t0);
+    // j["time"]["polar1"] = json(t1);
+    ofs << j.dump( 4 );
     ofs.close();
 }
