@@ -2,12 +2,17 @@
 #define TYPES_H__
 
 #include <string>
+using std::literals::string_literals::operator""s;
+
 #include <vector>
+#include <complex>
 #include <cstdint>
+#include <thread>
+
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include <thread>
+
 
 struct DeviceIdentity {
     std::string device_name;
@@ -32,10 +37,17 @@ struct FftParams
     uint samples_num;
 
     uint log2N;
-
     std::vector<int> mseq;
 };
 
+struct FftData
+{
+    fs::path data_path;
+    uint8_t polar;
+    FftParams params;
+    std::vector< int > mseq;
+    std::vector< std::complex< int > > data;
+};
 
 struct TimeResult
 {
@@ -55,6 +67,8 @@ struct TimeResult
 
     uint64_t read_start;
     uint64_t read_end;
+
+    uint64_t cpu_start_point;
 };
 
 #endif // TYPES_H__

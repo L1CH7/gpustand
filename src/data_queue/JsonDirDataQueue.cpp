@@ -1,0 +1,65 @@
+#include "JsonDirDataQueue.h"
+
+JsonDirDataQueue::JsonDirDataQueue( const fs::path & directory, const PathsTemplate p_template, const size_t num_threads )
+:   //DataQueueInterface< FftData >(),
+    paths_( p_template ),
+    directory_( directory ),
+    pool_( num_threads )
+{        
+    collectData();
+}
+
+void
+JsonDirDataQueue::collectData()
+{
+    std::vector< fs::path > testcases_vector;
+    for( auto & test_dir : fs::directory_iterator{ directory_ } )
+        if( fs::is_directory( test_dir ) )
+        {
+#ifdef TEST_MULTIPLIER 
+            // Multiplies tests and then shuffles them
+            for( size_t i = 0; i < TEST_MULTIPLIER; ++i )
+#endif
+            testcases_vector.emplace_back( test_dir.path() );
+        }
+#ifdef RANDOMIZE_TESTS
+    std::uniform_int_distribution< size_t > distrib( 0, testcases_vector.size() - 1, std::mt19937{ std::random_device{}() } );
+    std::shuffle( testcases_vector.begin(), testcases_vector.end(), distrib );
+#endif
+    BS::synced_stream ss( std::cout );
+    for( auto & testcase : testcases_vector )
+    {
+        auto task = [ testcase, this, &ss ](){ 
+            // ss.println( "Reading data: "s + testcase.native() );
+            auto params = readJsonParams( testcase / paths_.params_path );
+            auto mseq = readVectorFromJsonFile< int >( testcase / paths_.mseq_path );
+            // auto mseq0 = readVectorFromJsonFile< int >( testcase / paths_.mseq_path );
+            // std::vector< int > mseq1 = mseq0;
+            // std::copy( mseq0.begin(), mseq0.end(), mseq1 );
+            auto [polar0, polar1] = readVectorFromJsonFile2Polars< std::complex< int > >( testcase / paths_.data_path );
+            // ss.println( "log: "s + testcase.native() );
+            push( FftData{
+                .data_path = testcase,
+                .polar = 0,
+                .params = params,
+                .mseq = mseq, // copy assignment // std::copy( mseq.begin(), mseq.end() ),
+                .data = std::move( polar0 )
+            });
+            push( FftData{
+                .data_path = testcase,
+                .polar = 1,
+                .params = params,
+                .mseq = std::move( mseq ),
+                .data = std::move( polar1 )
+            });
+            ss.println( "End read data: "s + testcase.native() );
+        };
+#ifdef PARALLELL_READING
+        pool_.detach_task( task );
+    }
+    pool_.wait();
+#else
+        task();
+    }
+#endif
+}
