@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/build/src/GpuFFT", // Укажите путь к вашему исполняемому файлу
-            // "args": [],
+            "args": ["3", "0"],
             // "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
             // "environment": [],
