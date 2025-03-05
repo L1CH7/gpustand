@@ -60,7 +60,7 @@ def plotAllAmplitudes_RES(plt_t: plt, fig_t: plt.Figure, grd_t: GridSpec, test_p
 
 
 
-def plotAllAmplitudes_RAYPOLAR(plt_t: plt, fig_t: plt.Figure, grd_t: GridSpec, test_p: Path, params_p: Path, polar: str, i: int):
+def plotAllAmplitudes_RAYPOLAR(plt_t: plt, fig_t: plt.Figure, grd_t: GridSpec, test_p: Path, params_p: Path, polar: str, i: int, label: str):
     with params_p.open() as f:
         params = json.load(f)
     I = nl = params['nl']
@@ -76,7 +76,7 @@ def plotAllAmplitudes_RAYPOLAR(plt_t: plt, fig_t: plt.Figure, grd_t: GridSpec, t
 
     if i==-1:
         i=0
-    plot3d_vertical(plt_t, fig_t, grd_t, x, y, data[i].T, f"Result_horz[NL={i}]", 'kgd', 'kgrs', 'Amplitude')
+    plot3d_vertical(plt_t, fig_t, grd_t, x, y, data[i].T, label, 'kgd', 'kgrs', 'Amplitude')
 
 def plotRealImag():
     fig = plt.figure(figsize=(60, 90), constrained_layout=True)
@@ -142,15 +142,24 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(60, 90), constrained_layout=True)
     grd = gsp.GridSpec(nrows=2, ncols=2, figure=fig)
 
-    testpath_fm = Path('..') / 'testcases' / 'FM' / '004'
-    paramspath = testpath_fm / 'in_args.json'
-    nl=0
-    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,0], testpath_fm / 'ftps.json', paramspath, 'Polar0', nl)
-    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,1], testpath_fm / 'result/data.json', paramspath, 'Polar0', nl)
 
-    testpath_am = Path('..') / 'testcases' / 'FM' / '005'
-    paramspath = testpath_am / 'in_args.json'
+    report_dir = Path('..') / 'testcases' / 'report_2025-03-05_13:35:30'
+    
+    data_for_verify_dir = Path('..') / 'testcases' / 'FM' / '006'
+    paramspath = data_for_verify_dir / 'in_args.json'
+    data_for_verify_path = data_for_verify_dir / 'ftps.json'
     nl=0
-    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,0], testpath_am / 'ftps.json', paramspath, 'Polar0', nl)
-    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,1], testpath_am / 'result/data.json', paramspath, 'Polar0', nl)
+    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,0], data_for_verify_path, paramspath, 'Polar0', nl, 'for_verify')
+    result_path = report_dir / 'data' / '006_result_polar0.json'
+    plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,1], result_path, paramspath, 'Polar0', nl, 'result')
+
+    
+    # data_for_verify_dir = Path('..') / 'testcases' / 'FM' / '000'
+    # paramspath = data_for_verify_dir / 'in_args.json'
+    # data_for_verify_path = data_for_verify_dir / 'ftps.json'
+    # nl=0
+    # plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,0], data_for_verify_path, paramspath, 'Polar0', nl, 'for_verify')
+    # result_path = report_dir / 'data' / '000_result_polar0.json'
+    # plotAllAmplitudes_RAYPOLAR(plt, fig, grd[1,1], result_path, paramspath, 'Polar0', nl, 'result')
+
     plt.show()

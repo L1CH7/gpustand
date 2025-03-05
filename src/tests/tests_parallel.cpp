@@ -220,3 +220,96 @@ void RunAllTestsParallelV4( std::shared_ptr< ProgramHandler > handler, const fs:
     // bs_futures.wait();
     // std::cout << "tasks DONE!\n";
 }
+
+void RunAllTestsParallelNTimes( std::shared_ptr< ProgramHandler > handler, const fs::path & testcases_dir, const fs::path & results_dir, const size_t num_repeat_tests = 1, const size_t num_threads = 0 )
+{
+    // for thread safety initialize vector and use vector::operator[] or vector::at(). 
+    // vector::push_back is unsafe!!
+    std::size_t threads_size = num_threads;
+    std::vector< std::shared_ptr < FftCreator > > fft_instances( threads_size, nullptr );
+
+    BS::light_thread_pool pool( 
+        threads_size,
+        [handler, &fft_instances]( std::size_t thread_id ){ 
+            FftParams dummy_params{.is_am=false,.nl=1,.kgrs=1,.kgd=1};
+            fft_instances.at( thread_id ) = std::make_shared< FftCreator >( handler, dummy_params, nullptr ); 
+        } 
+    );
+
+
+    for( auto & testcase : fs::directory_iterator{ testcases_dir } )
+    {
+        if( fs::is_directory( testcase ) )
+        {
+            fs::path test_dir = testcase.path();
+            fs::path test_name = test_dir.filename();
+            fs::path result_test_dir = results_dir / test_name;
+            if( fs::exists( result_test_dir ) )
+                fs::remove_all( result_test_dir );
+            fs::create_directory( result_test_dir );
+
+            Paths paths
+            {
+                .params_path        = test_dir      / "in_args.json",
+                .input_path         = test_dir      / "out.json",
+                .mseq_path          = test_dir      / "tfpMSeqSigns.json",
+            };
+            FftParams params = readJsonParams( paths.params_path, paths.mseq_path );
+
+            auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< int > >( paths.input_path );
+            auto polar0_ptr = reinterpret_cast< cl_int2 * >( polar0.data() );
+            auto polar1_ptr = reinterpret_cast< cl_int2 * >( polar1.data() );
+
+            for( size_t i = 0; i < num_repeat_tests; ++i )
+            {
+                paths.result_data_path = result_test_dir / ( "data"s + std::to_string( i ) + ".json" );
+                paths.result_time_path = result_test_dir / ( "report"s + std::to_string( i ) + ".json" );
+                auto task = [ &fft_instances, test_dir, paths ]() { 
+                    std::size_t thread_id = BS::this_thread::get_index().value_or(0);
+                    std::stringstream ss;
+                    ss << "test:" << test_dir.c_str() << '\n';
+                    std::cout << ss.str();
+
+                    {
+                        fft.update( params, polar0_ptr );
+                        auto times0 = fft.compute();
+                        polar0.clear();
+                        auto res0_ptr = fft.getFftResult();
+
+                        fft.update( params, polar1_ptr );
+                        auto times1 = fft.compute();
+                        polar1.clear();
+                        auto res1_ptr = fft.getFftResult();
+
+                        // Get output cl_float2 array ant cast it to vector
+                        size_t res_size = params.nl * params.kgd * params.kgrs;
+                        auto res0_complex_ptr = reinterpret_cast< std::complex< float > * >( res0_ptr );
+                        auto res1_complex_ptr = reinterpret_cast< std::complex< float > * >( res1_ptr );
+
+                        json j_out;
+                        std::vector< std::vector< std::complex< float > > > resv0rays( params.nl );
+                        std::vector< std::vector< std::complex< float > > > resv1rays( params.nl );
+                        for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
+                        {
+                            std::stringstream key0, key1;
+                            resv0rays[i] = std::vector< std::complex< float > >( res0_complex_ptr + offset, res0_complex_ptr + offset + step );
+                            key0 << "Ray" << i << "Polar0";
+                            j_out[key0.str()] = resv0rays[i];
+
+                            resv1rays[i] = std::vector< std::complex< float > >( res1_complex_ptr + offset, res1_complex_ptr + offset + step );
+                            key1 << "Ray" << i << "Polar1";
+                            j_out[key1.str()] = resv1rays[i];
+                        }
+                        resv0rays.clear();
+                        resv1rays.clear();
+                        std::ofstream ofs( paths.result_data_path );
+                        ofs << j_out.dump(4);
+                        writeReportToJsonFile( paths.result_time_path, params, times0, times1 );
+                    }
+                };
+                pool.detach_task( task );
+            }
+        }
+    }
+    pool.wait();
+}

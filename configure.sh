@@ -5,7 +5,7 @@ fullpath="$(dirname $(readlink -f $0))"
 CMAKE_CXX_COMPILER="x86_64-linux-gnu-g++"
 
 # CMAKE_CXX_FLAGS="-pipe -O2 -funroll-loops -Wall -Wextra -Wformat=0 -Wmaybe-uninitialized"
-# CMAKE_CXX_FLAGS="-pipe -funroll-loops"
+# CMAKE_CXX_FLAGS="-pthread -pipe -funroll-loops"
 CMAKE_CXX_FLAGS="-O3 -pthread -pipe -funroll-loops"
 
 BUILD_DIR="build"

@@ -6,124 +6,147 @@
 #   include <debug_computations.h>
 #endif
 
-FftInterface::FftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )   
-:   handler( handler ),
-    params( params ),
-    dataArray( dataArray ),
-    outArray( new cl_float2[params.nl * params.kgd * params.kgrs] )
+FftInterface::FftInterface( std::shared_ptr< ProgramHandler > handler, FftData & data )   
+:   handler_( handler ),
+    params_( data.params ),
+    mseq_( std::move( data.mseq ) ),
+    data_array_( std::move( data.data_array ) ),
+    out_array_( params_.nl * params_.kgd * params_.kgrs, {0, 0} )
 {
     invariant();
 }
 
-FftInterface::~FftInterface()
-{
-    if( outArray )
-        delete outArray;
-}
 
 FftInterface::FftInterface( std::shared_ptr< ProgramHandler > handler )   
-:   handler( handler ),
-    params( {} ),
-    dataArray( nullptr ),
-    outArray( nullptr )
+:   handler_( handler ),
+    params_(),
+    mseq_(),
+    data_array_(),
+    out_array_()
 {
 }
 
-void FftInterface::setParams( const FftParams & newParams )
-{
-    params = newParams;
-    if( outArray )
-        delete outArray;
-    outArray = new cl_float2[params.nl * params.kgd * params.kgrs];
-}
+// void FftInterface::setParams( const FftParams & new_params )
+// {
+//     params = new_params;
+//     if( out_array_ )
+//         delete out_array_;
+//     out_array_ = new cl_float2[params.nl * params.kgd * params.kgrs];
+// }
 
-void FftInterface::setDataArray( cl_int2 * newDataArray )
-{
-    dataArray = newDataArray;
-    // Assumed that params are defined
-    invariant();
-}
+// void FftInterface::setDataArray( cl_int2 * new_data_array )
+// {
+//     data_array = new_data_array;
+//     // Assumed that params are defined
+//     invariant();
+// }
 
 void
-FftInterface::update( const FftParams & newParams, cl_int2 * newDataArray )
+FftInterface::update( FftData & new_data )
 {
-    setParams( newParams );
-    setDataArray( newDataArray );
+    params_ = new_data.params;
+    mseq_ = std::move( new_data.mseq );
+    data_array_ = std::move( new_data.data_array );
+    out_array_ = std::vector< std::complex< float > >( params_.nl * params_.kgd * params_.kgrs, {0, 0} );
+    invariant();
 }
 
 void
 FftInterface::invariant()
 {
-    if( handler == nullptr )
+    if( handler_ == nullptr )
     {
         std::cerr << error_str( "No OpenCL handler found" );
         assert(0);
     }
-    if( params.nl < 1 || params.kgd < 1 || params.kgrs < 1 )
+    if( params_.nl < 1 || params_.kgd < 1 || params_.kgrs < 1 )
     {
         std::cerr << error_str( "Incorrect params" );
         assert(0);
     }
-    // if( dataArray.size() < params.samples_num || ( !params.is_am && params.mseq.size() < params.true_nihs ) )
-    if( ( !params.is_am && params.mseq.size() < params.true_nihs ) )
+    if( data_array_.size() < params_.samples_num || ( !params_.is_am && mseq_.size() < params_.true_nihs ) )
+    // if( ( !params_.is_am && params_.mseq.size() < params_.true_nihs ) )
     {
         std::cerr << error_str( "Not enough data" );
         assert(0);
     }
 }
 
-FftCreator::FftCreator( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )
+
+class DummyFft: public FftInterface
 {
-    makeFftInterface( handler, params, dataArray );
+public:
+    DummyFft( std::shared_ptr< ProgramHandler > handler )
+    :   FftInterface( handler )
+    {
+        // flag identificates invalid fft interface
+        ready = false;
+        std::cout << "Dummy FFT instance c-tor!\n";
+    }
+    
+    ~DummyFft() = default;
+
+    TimeResult compute()
+    {
+        return {};
+    }
+};
+
+FftCreator::FftCreator( std::shared_ptr< ProgramHandler > handler )
+{
+    fft_ = std::make_unique< DummyFft >( handler );
+}
+
+FftCreator::FftCreator( std::shared_ptr< ProgramHandler > handler, FftData & data )
+{
+    makeFftInterface( handler, data );
 }
 
 bool 
 FftCreator::hasFftInterface()
 {
-    return fft != nullptr;
+    return fft_ != nullptr;
 }
 
 void
-FftCreator::update( const FftParams & newParams, cl_int2 * newDataArray )
+FftCreator::update( FftData & new_data )
 {
-    if( newParams.is_am == fft->params.is_am )
-        fft->update( newParams, newDataArray );
+    if( fft_->ready && new_data.params.is_am == fft_->params_.is_am )
+        fft_->update( new_data );
     else
-    {
-        auto handler = fft->handler;
-        makeFftInterface( handler, newParams, newDataArray );
-    }
+        makeFftInterface( fft_->handler_, new_data );
 }
 
 TimeResult
 FftCreator::compute()
 {
-    return fft->compute();
+    return fft_->compute();
 }
 
-cl_float2 *
-FftCreator::getFftResult() const
+std::vector< std::complex< float > >
+FftCreator::getFftResult()
 {
-    return fft->outArray;
+    return std::move( fft_->out_array_ );
 }
 
 void
-FftCreator::makeFftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )   
+FftCreator::makeFftInterface( std::shared_ptr< ProgramHandler > handler, FftData & data )
 {
-    if( fft )
-        fft.reset(); // deletes pointer
+    if( fft_ )
+        fft_.reset(); // deletes pointer
 
-    if( params.is_am )
-        fft = std::make_unique< AmFft >( handler, params, dataArray );
+    if( data.params.is_am )
+        fft_ = std::make_unique< AmFft >( handler, data );
     else
     {
-        uint32_t N = 1 << params.log2N;
-        uint64_t midBufferSize = params.nl * params.kgrs * N * sizeof(cl_float2);
+        uint32_t N = 1 << data.params.log2N;
+        uint64_t midBufferSize = data.params.nl * data.params.kgrs * N * sizeof(cl_float2);
         uint64_t maxBufferSize = handler->device->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
-        
+        data.mseq.resize( N, 0 );
+
         if (midBufferSize > maxBufferSize)
-            fft = std::make_unique< FmFftSepNl >( handler, params, dataArray );
+            fft_ = std::make_unique< FmFftSepNl >( handler, data );
         else
-            fft = std::make_unique< FmFft >( handler, params, dataArray );
+            fft_ = std::make_unique< FmFft >( handler, data );
     }
 }

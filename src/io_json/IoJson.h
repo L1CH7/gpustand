@@ -69,4 +69,6 @@ writeTimeStampsToFile( const fs::path &, const TimeResult & );
 void
 writeReportToJsonFile( const fs::path & filepath, const std::string & report_path, const uint8_t polar, const FftParams & params, const TimeResult & t );
 
+void
+writeFftResultToJsonFile( const fs::path & filepath, std::vector< std::complex< float > > & out_array, const uint8_t polar, const FftParams & params );
 #endif // IO_JSON_TESTS_H__

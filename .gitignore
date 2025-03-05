@@ -9,3 +9,5 @@ testcases
 data
 venv
 __pycache__
+
+tests

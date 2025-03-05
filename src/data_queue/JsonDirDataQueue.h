@@ -4,11 +4,11 @@
 #include "DataQueueInterface.h"
 #include <thread>
 
-// #define RANDOMIZE_TESTS
+#define RANDOMIZE_TESTS
 #ifdef RANDOMIZE_TESTS
 #   include <algorithm>
 #   include <random>
-#   define TEST_MULTIPLIER 10
+#   define TEST_MULTIPLIER 3
 #endif
 #define PARALLELL_READING
 

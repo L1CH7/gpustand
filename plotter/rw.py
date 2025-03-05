@@ -25,6 +25,8 @@ def dataComplexFromJsonFile(filepath: Path, polar: str):
 def dataComplexFromJsonFileRAYPOLAR(filepath: Path, polar: str):
     out = np.empty((0))
     if(not filepath.exists() or filepath.is_dir()):
+        print("invalid path\n")
+        print(filepath)
         return out
     with filepath.open() as file:
         data = json.load(file)

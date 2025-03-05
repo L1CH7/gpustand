@@ -37,7 +37,12 @@ struct FftParams
     uint samples_num;
 
     uint log2N;
-    std::vector<int> mseq;
+    // std::vector<int> mseq;
+    // FftParams() = default;
+    // FftParams( const FftParams & ) = default;
+    // FftParams( FftParams && ) = delete;
+    // FftParams & operator=( const FftParams & ) = default;
+    // FftParams & operator=( FftParams && ) = delete;
 };
 
 struct FftData
@@ -46,7 +51,40 @@ struct FftData
     uint8_t polar;
     FftParams params;
     std::vector< int > mseq;
-    std::vector< std::complex< int > > data;
+    std::vector< std::complex< int > > data_array;
+
+    FftData() = default;
+    FftData( const FftData & other ) = default;
+    FftData( FftData && other )
+    :   data_path( other.data_path ),
+        polar( other.polar ),
+        params( other.params ),
+        mseq( std::move( other.mseq ) ),
+        data_array( std::move( other.data_array ) )
+    {
+    }
+
+    FftData( fs::path data_path, uint8_t polar, FftParams params, std::vector< int > & mseq, std::vector< std::complex< int > > & data_array )
+    :   data_path( data_path ),
+        polar( polar ),
+        params( params ),
+        mseq( std::move( mseq ) ),
+        data_array( std::move( data_array ) )
+    {
+    }
+
+    FftData & operator=( const FftData & other ) = default;
+    FftData & operator=( FftData && other )
+    {
+        // FftData temp{ std::move( other ) };
+        // return temp;
+        this->data_path = other.data_path;
+        this->params = other.params;
+        this->polar = other.polar;
+        this->mseq = std::move( other.mseq );
+        this->data_array = std::move( other.data_array );
+        return *this;
+    }
 };
 
 struct TimeResult

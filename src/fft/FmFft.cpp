@@ -6,33 +6,33 @@
 #   include <debug_computations.h>
 #endif
 
-FmFft::FmFft( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray )  
-:   FftInterface( handler, params, dataArray )
+FmFft::FmFft( std::shared_ptr< ProgramHandler > handler, FftData & data )
+:   FftInterface( handler, data )
 {
-    std::cout<<"FmFft c-tor!\n";
+    std::cout<<"FM FFT instance c-tor!\n";
 }
 
 TimeResult
 FmFft::compute()
 {
     std::cout<<"FmFft computing!\n";
-    const int sinArrLen = 524288; //2^19
-    uint32_t N = 1 << params.log2N;
+    const uint32_t sinArrLen = 524288; //2^19
+    uint32_t N = 1 << params_.log2N;
 
-    uint32_t grouplog2 = 8;
-    if ((params.log2N - 1) < grouplog2)
-        grouplog2 = params.log2N - 1;
-    uint32_t groupSize = 1 << grouplog2;
+    uint32_t group_log2 = 8;
+    if ((params_.log2N - 1) < group_log2)
+        group_log2 = params_.log2N - 1;
+    uint32_t group_size = 1 << group_log2;
 
-// Print this->dataArray
+// Print this->data_array
 #ifdef ENABLE_DEBUG_COMPUTATIONS     
-    writePtrArrayToJsonFile< cl_int2, std::complex< int > >( "event_params_dataArray.json", dataArray, params.nl * params.samples_num );
+    writePtrArrayToJsonFile< cl_int2, std::complex< int > >( "event_params_dataArray.json", data_array, params_.nl * params_.samples_num );
 #endif
 
     cl_command_queue_properties queue_properties = CL_QUEUE_PROFILING_ENABLE;
 
     cl::Buffer sinsBuffer(
-        *( handler->context ), 
+        *( handler_->context ), 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
         CL_MEM_READ_WRITE,
 #else
@@ -42,7 +42,7 @@ FmFft::compute()
     );
         
     cl::Buffer inSignBuffer(
-        *( handler->context ), 
+        *( handler_->context ), 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
         CL_MEM_READ_ONLY,
 #else
@@ -52,7 +52,7 @@ FmFft::compute()
     );
 
     cl::Buffer outSignBuffer(
-        *( handler->context ), 
+        *( handler_->context ), 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
         CL_MEM_READ_WRITE,
 #else
@@ -62,47 +62,47 @@ FmFft::compute()
     );
 
     cl::Buffer inFFTBuffer(
-        *( handler->context ), 
+        *( handler_->context ), 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
         CL_MEM_READ_ONLY,
 #else
         CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
 #endif
-        params.nl * params.samples_num * sizeof( cl_int2 )
+        params_.nl * params_.samples_num * sizeof( cl_int2 )
     );
 
     cl::Buffer outFFTBuffer(
-        *( handler->context ), 
+        *( handler_->context ), 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
         CL_MEM_READ_WRITE,
 #else
         CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
 #endif
-        params.nl * N * sizeof( cl_float2 )
+        params_.nl * N * sizeof( cl_float2 )
     );
 
     cl::Buffer midIFFTBuffer(
-        *( handler->context ), 
+        *( handler_->context ), 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
         CL_MEM_READ_WRITE,
 #else
         CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS,
 #endif
-        params.nl * params.kgrs * N * sizeof( cl_float2 )
+        params_.nl * params_.kgrs * N * sizeof( cl_float2 )
     );
 
     cl::Buffer outIFFTBuffer(
-        *( handler->context ), 
+        *( handler_->context ), 
 #ifdef ENABLE_DEBUG_COMPUTATIONS
         CL_MEM_READ_WRITE,
 #else
         CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY,
 #endif
-        params.nl * params.kgrs * params.kgd * sizeof( cl_float2 )
+        params_.nl * params_.kgrs * params_.kgd * sizeof( cl_float2 )
     );
 
     cl::CommandQueue queue(
-        *( handler->context ), *( handler->device ), queue_properties, NULL 
+        *( handler_->context ), *( handler_->device ), queue_properties, NULL 
     );
 
     cl::Event eventArray[11];
@@ -110,18 +110,24 @@ FmFft::compute()
 
     queue.enqueueWriteBuffer(
         inSignBuffer, CL_TRUE, 0, 
-        N * sizeof( cl_int ), params.mseq.data(),
+        N * sizeof( cl_int ), 
+        reinterpret_cast< cl_int * >( mseq_.data() ),
         NULL, &eventArray[0]
     );
+    mseq_.clear(); // RAM cleanup
+    mseq_.shrink_to_fit();
+    // std::vector< int >().swap( mseq_ );
 
     queue.enqueueWriteBuffer(
         inFFTBuffer, CL_TRUE, 0, 
-        params.nl * params.samples_num * sizeof( cl_int2 ),
-        dataArray, NULL, &eventArray[1]
+        params_.nl * params_.samples_num * sizeof( cl_int2 ),
+        reinterpret_cast< cl_int2 * >( data_array_.data() ), 
+        NULL, &eventArray[1]
     );
+    data_array_.clear(); // RAM cleanup
+    data_array_.shrink_to_fit();
 
-
-    auto sins_kernel_functor = cl::KernelFunctor< cl::Buffer >{ *( handler->program ), "getSinArrayTwoPi_F" };
+    auto sins_kernel_functor = cl::KernelFunctor< cl::Buffer >{ *( handler_->program ), "getSinArrayTwoPi_F" };
     error = CL_SUCCESS;
     cl::EnqueueArgs sins_eargs{ queue, cl::NullRange, cl::NDRange( sinArrLen ), cl::NullRange };
     eventArray[2] = sins_kernel_functor( sins_eargs, sinsBuffer, error );
@@ -130,18 +136,18 @@ FmFft::compute()
 #ifdef ENABLE_DEBUG_COMPUTATIONS     
     writeBufferToJsonFile< cl_float, float >( "event.sinsBuffer.json", queue, sinsBuffer, sinArrLen );
     writeBufferToJsonFile< cl_int, int >( "event.inSignBuffer.json", queue, inSignBuffer, N );
-    writeBufferToJsonFile< cl_int2, std::complex< int > >( "event.inFFTBuffer.json", queue, inFFTBuffer, params.nl * params.samples_num );
+    writeBufferToJsonFile< cl_int2, std::complex< int > >( "event.inFFTBuffer.json", queue, inFFTBuffer, params_.nl * params_.samples_num );
 #endif
 
     auto sign_prep_kernel_functor = cl::KernelFunctor< cl::Buffer, cl::Buffer, cl_uint, cl_uint >{ 
-        *( handler->program ), "signPrep_F" 
+        *( handler_->program ), "signPrep_F" 
     };
     error = CL_SUCCESS;
     cl::EnqueueArgs sign_prep_eargs{ queue, cl::NullRange, cl::NDRange( N ), cl::NullRange };
     eventArray[3] = sign_prep_kernel_functor( 
         sign_prep_eargs, inSignBuffer, outSignBuffer, 
-        params.log2N, 
-        params.true_nihs,
+        params_.log2N, 
+        params_.true_nihs,
         error 
     );
 // Print outSignBuffer
@@ -150,14 +156,14 @@ FmFft::compute()
 #endif
 
     auto sign_fft_kernel_functor = cl::KernelFunctor< cl::Buffer, cl::Buffer, cl_uint, cl_uint >{ 
-        *( handler->program ), "signFFT_F" 
+        *( handler_->program ), "signFFT_F" 
     };
     error = CL_SUCCESS;
-    cl::EnqueueArgs sign_fft_eargs{ queue, cl::NullRange, cl::NDRange( groupSize ), cl::NDRange( groupSize ) };
+    cl::EnqueueArgs sign_fft_eargs{ queue, cl::NullRange, cl::NDRange( group_size ), cl::NDRange( group_size ) };
     eventArray[4] = sign_fft_kernel_functor( 
         sign_fft_eargs, outSignBuffer, sinsBuffer, 
-        params.log2N, 
-        grouplog2,
+        params_.log2N, 
+        group_log2,
         error 
     );
 // Print outSignBuffer
@@ -165,96 +171,96 @@ FmFft::compute()
     writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.signFFT_F.outSignBuffer.json", queue, outSignBuffer, N );
 #endif
 
-    uint dlstr_ndec = params.dlstr / params.ndec;
+    uint dlstr_ndec = params_.dlstr / params_.ndec;
     auto data_prep_kernel_functor = cl::KernelFunctor< cl::Buffer, cl::Buffer, cl_uint, cl_uint, cl_uint >{ 
-        *( handler->program ), "dataPrepSample_F" 
+        *( handler_->program ), "dataPrepSample_F" 
     };
     error = CL_SUCCESS;
-    cl::EnqueueArgs data_prep_eargs{ queue, cl::NullRange, cl::NDRange( N, params.nl ), cl::NullRange };
+    cl::EnqueueArgs data_prep_eargs{ queue, cl::NullRange, cl::NDRange( N, params_.nl ), cl::NullRange };
     eventArray[5] = data_prep_kernel_functor( 
         data_prep_eargs, inFFTBuffer, outFFTBuffer, 
-        params.log2N, 
+        params_.log2N, 
         dlstr_ndec,
-        params.samples_num, 
+        params_.samples_num, 
         error 
     );
 // Print outFFTBuffer
 #ifdef ENABLE_DEBUG_COMPUTATIONS     
-    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.dataPrepSample_F.outFFTBuffer.json", queue, outFFTBuffer, params.nl * N );
+    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.dataPrepSample_F.outFFTBuffer.json", queue, outFFTBuffer, params_.nl * N );
 #endif
 
     auto data_fft_kernel_functor = cl::KernelFunctor< cl::Buffer, cl::Buffer, cl_uint, cl_uint >{ 
-        *( handler->program ), "dataFFT_F" 
+        *( handler_->program ), "dataFFT_F" 
     };
     error = CL_SUCCESS;
-    cl::EnqueueArgs data_fft_eargs{ queue, cl::NullRange, cl::NDRange( groupSize, params.nl ), cl::NDRange( groupSize, 1 ) };
+    cl::EnqueueArgs data_fft_eargs{ queue, cl::NullRange, cl::NDRange( group_size, params_.nl ), cl::NDRange( group_size, 1 ) };
     eventArray[6] = data_fft_kernel_functor( 
         data_fft_eargs, outFFTBuffer, sinsBuffer, 
-        params.log2N, 
-        grouplog2,
+        params_.log2N, 
+        group_log2,
         error 
     );
 // Print outFFTBuffer
 #ifdef ENABLE_DEBUG_COMPUTATIONS     
-    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.dataFFT_F.outFFTBuffer.json", queue, outFFTBuffer, params.nl * N );
+    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.dataFFT_F.outFFTBuffer.json", queue, outFFTBuffer, params_.nl * N );
 #endif
 
-    int N2nihs = N / 2 / params.true_nihs;
+    int N2nihs = N / 2 / params_.true_nihs;
     auto ifft_prep_kernel_functor = cl::KernelFunctor< cl::Buffer, cl::Buffer, cl::Buffer, cl_uint, cl_uint, cl_uint >{ 
-        *( handler->program ), "IFFTPrep_F" 
+        *( handler_->program ), "IFFTPrep_F" 
     };
     error = CL_SUCCESS;
-    cl::EnqueueArgs ifft_prep_eargs{ queue, cl::NullRange, cl::NDRange( N, params.kgrs, params.nl ), cl::NullRange };
+    cl::EnqueueArgs ifft_prep_eargs{ queue, cl::NullRange, cl::NDRange( N, params_.kgrs, params_.nl ), cl::NullRange };
     eventArray[7] = ifft_prep_kernel_functor( 
         ifft_prep_eargs, outFFTBuffer, outSignBuffer, midIFFTBuffer,
-        params.log2N, 
-        params.n1grs, 
+        params_.log2N, 
+        params_.n1grs, 
         N2nihs,
         error 
     );
 // Print midIFFTBuffer
 #ifdef ENABLE_DEBUG_COMPUTATIONS     
-    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.IFFTPrep_F.midIFFTBuffer.json", queue, midIFFTBuffer, params.nl * params.kgrs * N );
+    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.IFFTPrep_F.midIFFTBuffer.json", queue, midIFFTBuffer, params_.nl * params_.kgrs * N );
 #endif
 
     auto ifft_fft_kernel_functor = cl::KernelFunctor< cl::Buffer, cl::Buffer, cl_uint, cl_uint >{ 
-        *( handler->program ), "IFFT_FFT_F" 
+        *( handler_->program ), "IFFT_FFT_F" 
     };
     error = CL_SUCCESS;
-    cl::EnqueueArgs ifft_fft_eargs{ queue, cl::NullRange, cl::NDRange( groupSize, params.kgrs, params.nl ), cl::NDRange( groupSize, 1, 1 ) };
+    cl::EnqueueArgs ifft_fft_eargs{ queue, cl::NullRange, cl::NDRange( group_size, params_.kgrs, params_.nl ), cl::NDRange( group_size, 1, 1 ) };
     eventArray[8] = ifft_fft_kernel_functor( 
         ifft_fft_eargs, midIFFTBuffer, sinsBuffer,
-        params.log2N, 
-        grouplog2,
+        params_.log2N, 
+        group_log2,
         error 
     );
 // Print midIFFTBuffer
 #ifdef ENABLE_DEBUG_COMPUTATIONS     
-    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.IFFT_FFT_F.midIFFTBuffer.json", queue, midIFFTBuffer, params.nl * params.kgrs * N );
+    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.IFFT_FFT_F.midIFFTBuffer.json", queue, midIFFTBuffer, params_.nl * params_.kgrs * N );
 #endif
 
     auto ifft_post_kernel_functor = cl::KernelFunctor< cl::Buffer, cl::Buffer, cl_uint, cl_uint, cl_uint, cl_uint >{ 
-        *( handler->program ), "IFFTPost_F" 
+        *( handler_->program ), "IFFTPost_F" 
     };
     error = CL_SUCCESS;
-    cl::EnqueueArgs ifft_post_eargs{ queue, cl::NullRange, cl::NDRange( params.kgd, params.kgrs, params.nl ), cl::NullRange };
+    cl::EnqueueArgs ifft_post_eargs{ queue, cl::NullRange, cl::NDRange( params_.kgd, params_.kgrs, params_.nl ), cl::NullRange };
     eventArray[9] = ifft_post_kernel_functor( 
         ifft_post_eargs, midIFFTBuffer, outIFFTBuffer,
-        params.log2N, 
-        params.nfgd_fu, 
-        params.shgd, 
-        params.ndec, 
+        params_.log2N, 
+        params_.nfgd_fu, 
+        params_.shgd, 
+        params_.ndec, 
         error 
     );
 // Print outIFFTBuffer
 #ifdef ENABLE_DEBUG_COMPUTATIONS     
-    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.IFFTPost_F.outIFFTBuffer.json", queue, outIFFTBuffer, params.nl * params.kgrs * params.kgd );
+    writeBufferToJsonFile< cl_float2, std::complex< float > >( "event.IFFTPost_F.outIFFTBuffer.json", queue, outIFFTBuffer, params_.nl * params_.kgrs * params_.kgd );
 #endif
 
     queue.enqueueReadBuffer(
         outIFFTBuffer, CL_TRUE, 0,
-        params.nl * params.kgrs * params.kgd * sizeof(cl_float2),
-        outArray,
+        params_.nl * params_.kgrs * params_.kgd * sizeof( cl_float2 ),
+        reinterpret_cast< cl_float2 * >( out_array_.data() ),
         NULL, &eventArray[10]
     );
 

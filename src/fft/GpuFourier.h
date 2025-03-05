@@ -12,35 +12,39 @@ class FftCreator;
 class FftInterface
 {
 public:
-    FftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
+    FftInterface( std::shared_ptr< ProgramHandler > handler, FftData & data );
 
     FftInterface( std::shared_ptr< ProgramHandler > handler );
 
-    ~FftInterface();
+    ~FftInterface() = default;
 
-    void setParams( const FftParams & newParams );
+    // void setParams( const FftParams & new_params );
 
-    void setDataArray( cl_int2 * newDataArray );
+    // void setDataArray( cl_int2 * new_data_array );
 
-    void update( const FftParams & newParams, cl_int2 * newDataArray );
+    void update( FftData & data );
 
     virtual TimeResult compute() = 0;
 
 protected:
     void invariant();
 
-    std::shared_ptr< ProgramHandler > handler;
-    FftParams params;
-    cl_int2 * dataArray;
-    cl_float2 * outArray;
+    bool ready{ true };
+    std::shared_ptr< ProgramHandler > handler_;
+    FftParams params_;
+    std::vector< int > mseq_;
+    std::vector< std::complex< int > > data_array_;
+    std::vector< std::complex< float > > out_array_;
 
     friend class FftCreator;
 };
 
+class DummyFft;
+
 class AmFft: public FftInterface
 {
 public:
-    AmFft( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
+    AmFft( std::shared_ptr< ProgramHandler > handler, FftData & data );
     
     ~AmFft() = default;
 
@@ -50,7 +54,7 @@ public:
 class FmFft: public FftInterface
 {
 public:
-    FmFft( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
+    FmFft( std::shared_ptr< ProgramHandler > handler, FftData & data );
 
     ~FmFft() = default;
 
@@ -60,7 +64,7 @@ public:
 class FmFftSepNl: public FftInterface
 {
 public:
-    FmFftSepNl( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
+    FmFftSepNl( std::shared_ptr< ProgramHandler > handler, FftData & data );
 
     ~FmFftSepNl() = default;
 
@@ -72,26 +76,28 @@ class FftCreator
 public:
     FftCreator() = default;
 
-    explicit FftCreator( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
+    explicit FftCreator( std::shared_ptr< ProgramHandler > handler );
+
+    explicit FftCreator( std::shared_ptr< ProgramHandler > handler, FftData & data );
 
     ~FftCreator() = default;
 
-    void makeFftInterface( std::shared_ptr< ProgramHandler > handler, const FftParams & params, cl_int2 * dataArray );
+    void makeFftInterface( std::shared_ptr< ProgramHandler > handler, FftData & data );
 
     bool hasFftInterface();
 
-    // void setParams( const FftParams & newParams );
+    // void setParams( const FftParams & new_params );
 
-    // void setDataArray( cl_int2 * newDataArray );
+    // void setDataArray( cl_int2 * new_data_array );
 
-    void update( const FftParams & newParams, cl_int2 * newDataArray );
+    void update( FftData & data );
 
     TimeResult compute();
 
-    cl_float2 * getFftResult() const;
+    std::vector< std::complex< float > > getFftResult();
 
 private:
-    std::unique_ptr< FftInterface > fft;
+    std::unique_ptr< FftInterface > fft_;
 };
 
 #endif // GPU_FOURIER_H__

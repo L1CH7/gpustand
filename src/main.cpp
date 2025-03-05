@@ -84,9 +84,13 @@ int main( int argc, char ** argv )
         auto in_time_t = std::chrono::system_clock::to_time_t(now);
         std::stringstream ss;
         ss << "report_" << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%X");
-        fs::path report_dir = root_dir / "testcases" / ss.str();
+        fs::path report_root_dir = root_dir / "testcases" / ss.str();
+        fs::path report_dir = report_root_dir / "reports";
         if( !fs::exists( report_dir ) )
             fs::create_directories( report_dir );
+        fs::path data_result_dir = report_root_dir / "data";
+        if( !fs::exists( data_result_dir ) )
+            fs::create_directories( data_result_dir );
 
 
         PathsTemplate data_paths{
@@ -94,7 +98,7 @@ int main( int argc, char ** argv )
             .mseq_path = "tfpMSeqSigns.json",
             .data_path = "out.json"
         };
-        size_t read_thread_num = 4;
+        size_t read_thread_num = 6;
 
         JsonDirDataQueue data_queue( testcases, data_paths, read_thread_num );
 
@@ -103,8 +107,7 @@ int main( int argc, char ** argv )
         BS::light_thread_pool pool( 
             computing_thread_num,
             [handler, &fft_instances]( std::size_t thread_id ){ 
-                FftParams dummy_params{.is_am=false,.nl=1,.kgrs=1,.kgd=1};
-                fft_instances.at( thread_id ) = std::make_shared< FftCreator >( handler, dummy_params, nullptr ); 
+                fft_instances.at( thread_id ) = std::make_shared< FftCreator >( handler ); 
             }
         );
 
@@ -112,23 +115,62 @@ int main( int argc, char ** argv )
 
         for( size_t i = 0; i < data_queue.size(); ++i )
         {
-            auto task = [&data_queue, &fft_instances, &report_dir](){
+            auto task = [&data_queue, &fft_instances, &report_dir, &data_result_dir](){
+                // size_t thread_id = BS::this_thread::get_index().value_or(0);
                 size_t thread_id = BS::this_thread::get_index().value_or(-1);
-                if( thread_id == -1 )
-                    throw error_str("Invalid thread_id!\n");
+                if( thread_id > fft_instances.size() )
+                {
+                    std::cout << error_str("Invalid thread_id!\n");
+                    return;
+                }
 
                 auto data = data_queue.pop();
-                auto polar_ptr = reinterpret_cast< cl_int2 * >( data->data.data() );
-                data->params.mseq = std::move( data->mseq );
+                FftParams params = data->params;
+                uint8_t polar = data->polar;
+                fs::path data_path = data->data_path;
+                
+                try
+                {
+                
+                    fft_instances[thread_id]->update( *data );
+                    auto time = fft_instances[thread_id]->compute();
+                    auto out_array = fft_instances[thread_id]->getFftResult();
 
-                fft_instances[thread_id]->update( data->params, polar_ptr );
-                auto time = fft_instances[thread_id]->compute();
-                auto result = fft_instances[thread_id]->getFftResult();
+                    // Get output cl_float2 array ant cast it to vector
 
-                std::string report_name = data->data_path.filename().native() + "_polar" + std::to_string( data->polar ) + ".json";
-                writeReportToJsonFile( report_dir / report_name, data->data_path, data->polar, data->params, time );
+                    std::string test_name = data->data_path.filename().native();
+                    auto now = std::chrono::system_clock::now();
+                    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+                    
+                    std::stringstream ss_result;
+                    ss_result << test_name << "_result_polar" << std::to_string( polar ) 
+                        << std::put_time(std::localtime(&in_time_t), "%X.json");
+                    std::string data_result_name = ss_result.str();
+
+                    std::stringstream ss_report;
+                    ss_report << test_name << "_polar" << std::to_string( polar )
+                        << std::put_time(std::localtime(&in_time_t), "%X.json");
+                    std::string report_name = ss_report.str();
+
+                    // std::string data_result_name = test_name + "_result_polar" + std::to_string( polar ) + ".json";
+                    writeFftResultToJsonFile( data_result_dir / data_result_name, out_array, polar, params );
+                    // std::string report_name = test_name + "_polar" + std::to_string( polar ) + ".json";
+                    writeReportToJsonFile( report_dir / report_name, data_path, polar, params, time );
+                }
+                catch( const cl::Error & e )
+                {
+                    std::cout << error_str(e.what()) <<'\n';
+                    std::cout << error_str( getErrorString( e.err() ) ) <<'\n';
+                    throw e;
+                }
+                catch( const std::exception & e )
+                {
+                    std::cout << error_str(e.what()) <<'\n';
+                    throw e;
+                }
             };
             pool.detach_task( task );
+            // task();
         }
         pool.wait();
     }
