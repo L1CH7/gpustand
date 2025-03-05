@@ -115,7 +115,7 @@ int main( int argc, char ** argv )
 
         for( size_t i = 0; i < data_queue.size(); ++i )
         {
-            auto task = [&data_queue, &fft_instances, &report_dir, &data_result_dir](){
+            auto task = [&data_queue, &fft_instances, &report_dir, &data_result_dir,i](){
                 // size_t thread_id = BS::this_thread::get_index().value_or(0);
                 size_t thread_id = BS::this_thread::get_index().value_or(-1);
                 if( thread_id > fft_instances.size() )
@@ -141,15 +141,25 @@ int main( int argc, char ** argv )
                     std::string test_name = data->data_path.filename().native();
                     auto now = std::chrono::system_clock::now();
                     auto in_time_t = std::chrono::system_clock::to_time_t(now);
-                    
+
+                    // std::stringstream ss_result;
+                    // ss_result << test_name << "_result_polar" << std::to_string( polar ) 
+                    //     << std::put_time(std::localtime(&in_time_t), "%X.json");
+                    // std::string data_result_name = ss_result.str();
+
+                    // std::stringstream ss_report;
+                    // ss_report << test_name << "_polar" << std::to_string( polar )
+                    //     << std::put_time(std::localtime(&in_time_t), "%X.json");
+                    // std::string report_name = ss_report.str();
+
                     std::stringstream ss_result;
                     ss_result << test_name << "_result_polar" << std::to_string( polar ) 
-                        << std::put_time(std::localtime(&in_time_t), "%X.json");
+                        << "_" << i << ".json";
                     std::string data_result_name = ss_result.str();
 
                     std::stringstream ss_report;
                     ss_report << test_name << "_polar" << std::to_string( polar )
-                        << std::put_time(std::localtime(&in_time_t), "%X.json");
+                        << "_" << i << ".json";
                     std::string report_name = ss_report.str();
 
                     // std::string data_result_name = test_name + "_result_polar" + std::to_string( polar ) + ".json";
