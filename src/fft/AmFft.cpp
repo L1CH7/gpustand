@@ -82,7 +82,6 @@ AmFft::compute()
         params_.nl * params_.samples_num * sizeof( cl_int2 ),
         data_array_.data(), NULL, &eventArray[0]
     );
-    data_array_.clear(); // RAM cleanup
 
     auto sins_kernel_functor = cl::KernelFunctor< cl::Buffer >{ *( handler_->program ), "getSinArrayTwoPi_F" };
     error = CL_SUCCESS;
@@ -153,6 +152,10 @@ AmFft::compute()
 
     queue.finish();
 
+    // RAM cleanup
+    std::vector< std::complex< int > >().swap( data_array_ ); 
+
+    const std::scoped_lock< std::mutex > l( m_ );
     TimeResult time = {
         .write_start            = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
         .write_end              = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_END>(),

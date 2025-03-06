@@ -26,20 +26,6 @@ FftInterface::FftInterface( std::shared_ptr< ProgramHandler > handler )
 {
 }
 
-// void FftInterface::setParams( const FftParams & new_params )
-// {
-//     params = new_params;
-//     if( out_array_ )
-//         delete out_array_;
-//     out_array_ = new cl_float2[params.nl * params.kgd * params.kgrs];
-// }
-
-// void FftInterface::setDataArray( cl_int2 * new_data_array )
-// {
-//     data_array = new_data_array;
-//     // Assumed that params are defined
-//     invariant();
-// }
 
 void
 FftInterface::update( FftData & new_data )
@@ -65,9 +51,13 @@ FftInterface::invariant()
         assert(0);
     }
     if( data_array_.size() < params_.samples_num || ( !params_.is_am && mseq_.size() < params_.true_nihs ) )
-    // if( ( !params_.is_am && params_.mseq.size() < params_.true_nihs ) )
-    {
-        std::cerr << error_str( "Not enough data" );
+    {   
+        std::stringstream ss;
+        ss << error_str( "Not enough data: test#" ) << params_.test_name
+            << focus_str("\nsamples_num = ") << params_.samples_num << focus_str("; array_size = ") << data_array_.size();
+        if( !params_.is_am )
+            ss << focus_str("\true_nihs = ") << params_.true_nihs << focus_str("; mseq_size = ") << mseq_.size() << std::endl;
+        std::cerr << ss.str();
         assert(0);
     }
 }
@@ -140,11 +130,11 @@ FftCreator::makeFftInterface( std::shared_ptr< ProgramHandler > handler, FftData
     else
     {
         uint32_t N = 1 << data.params.log2N;
-        uint64_t midBufferSize = data.params.nl * data.params.kgrs * N * sizeof(cl_float2);
-        uint64_t maxBufferSize = handler->device->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
+        uint64_t mid_buffer_size = data.params.nl * data.params.kgrs * N * sizeof(cl_float2);
+        uint64_t max_buffer_size = handler->device->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
         data.mseq.resize( N, 0 );
 
-        if (midBufferSize > maxBufferSize)
+        if (mid_buffer_size > max_buffer_size)
             fft_ = std::make_unique< FmFftSepNl >( handler, data );
         else
             fft_ = std::make_unique< FmFft >( handler, data );

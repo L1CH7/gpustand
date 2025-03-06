@@ -114,14 +114,12 @@ FmFftSepNl::compute()
         N * sizeof( cl_int ), mseq_.data(), 
         NULL, &eventArray[/* 0 */eventcounter++]
     );
-    mseq_.clear(); // RAM cleanup
 
     queue.enqueueWriteBuffer(
         inFFTBuffer, CL_TRUE, 0, 
         params_.nl * params_.samples_num * sizeof( cl_int2 ), data_array_.data(), 
         NULL, &eventArray[/* 1 */eventcounter++]
     );
-    data_array_.clear(); // RAM cleanup
 
     auto sins_kernel_functor = cl::KernelFunctor< cl::Buffer >{ *( handler_->program ), "getSinArrayTwoPi_F" };
     error = CL_SUCCESS;
@@ -283,6 +281,11 @@ FmFftSepNl::compute()
 
     queue.finish();
 
+    // RAM cleanup
+    std::vector< std::complex< int > >().swap( data_array_ ); 
+    std::vector< int >().swap( mseq_ );
+
+    const std::scoped_lock< std::mutex > l( m_ );
     int shift = 6 + params_.nl * 3;
     TimeResult time = {
         .write_start            = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_START>(),

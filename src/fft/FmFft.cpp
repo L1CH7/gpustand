@@ -15,7 +15,9 @@ FmFft::FmFft( std::shared_ptr< ProgramHandler > handler, FftData & data )
 TimeResult
 FmFft::compute()
 {
-    std::cout<<"FmFft computing!\n";
+    std::stringstream ss;
+    ss << "FmFft computing! Test:" << params_.test_name << std::endl;
+    std::cout << ss.str();
     const uint32_t sinArrLen = 524288; //2^19
     uint32_t N = 1 << params_.log2N;
 
@@ -114,8 +116,8 @@ FmFft::compute()
         reinterpret_cast< cl_int * >( mseq_.data() ),
         NULL, &eventArray[0]
     );
-    mseq_.clear(); // RAM cleanup
-    mseq_.shrink_to_fit();
+    // mseq_.clear(); // RAM cleanup
+    // mseq_.shrink_to_fit();
     // std::vector< int >().swap( mseq_ );
 
     queue.enqueueWriteBuffer(
@@ -124,8 +126,8 @@ FmFft::compute()
         reinterpret_cast< cl_int2 * >( data_array_.data() ), 
         NULL, &eventArray[1]
     );
-    data_array_.clear(); // RAM cleanup
-    data_array_.shrink_to_fit();
+    // data_array_.clear(); // RAM cleanup
+    // data_array_.shrink_to_fit();
 
     auto sins_kernel_functor = cl::KernelFunctor< cl::Buffer >{ *( handler_->program ), "getSinArrayTwoPi_F" };
     error = CL_SUCCESS;
@@ -266,6 +268,11 @@ FmFft::compute()
 
     queue.finish();
 
+    // RAM cleanup
+    std::vector< std::complex< int > >().swap( data_array_ );
+    std::vector< int >().swap( mseq_ );
+
+    const std::scoped_lock< std::mutex > l( m_ );
     TimeResult time = {
         .write_start            = eventArray[0].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
         .write_end              = eventArray[1].getProfilingInfo<CL_PROFILING_COMMAND_END>(),

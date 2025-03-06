@@ -1,7 +1,7 @@
 #ifndef GPU_FOURIER_H__
 #define GPU_FOURIER_H__
 
-// #include <iostream>
+#include <mutex>
 #include <ProgramHandler.h>
 #include <types.h>
 #include <error.h>
@@ -18,10 +18,6 @@ public:
 
     ~FftInterface() = default;
 
-    // void setParams( const FftParams & new_params );
-
-    // void setDataArray( cl_int2 * new_data_array );
-
     void update( FftData & data );
 
     virtual TimeResult compute() = 0;
@@ -35,6 +31,8 @@ protected:
     std::vector< int > mseq_;
     std::vector< std::complex< int > > data_array_;
     std::vector< std::complex< float > > out_array_;
+
+    std::mutex m_{};
 
     friend class FftCreator;
 };
@@ -85,10 +83,6 @@ public:
     void makeFftInterface( std::shared_ptr< ProgramHandler > handler, FftData & data );
 
     bool hasFftInterface();
-
-    // void setParams( const FftParams & new_params );
-
-    // void setDataArray( cl_int2 * new_data_array );
 
     void update( FftData & data );
 
