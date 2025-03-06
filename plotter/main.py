@@ -143,14 +143,14 @@ if __name__ == "__main__":
     grd = gsp.GridSpec(nrows=2, ncols=2, figure=fig)
 
 
-    report_dir = Path('..') / 'testcases' / 'report_2025-03-05_13:35:30'
+    report_dir = Path('..') / 'reports' / 'report_2025-03-06_17:24:17'
     
     data_for_verify_dir = Path('..') / 'testcases' / 'FM' / '006'
     paramspath = data_for_verify_dir / 'in_args.json'
     data_for_verify_path = data_for_verify_dir / 'ftps.json'
     nl=0
     plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,0], data_for_verify_path, paramspath, 'Polar0', nl, 'for_verify')
-    result_path = report_dir / 'data' / '006_result_polar0.json'
+    result_path = report_dir / 'data' / '006_result_polar0_2.json'
     plotAllAmplitudes_RAYPOLAR(plt, fig, grd[0,1], result_path, paramspath, 'Polar0', nl, 'result')
 
     

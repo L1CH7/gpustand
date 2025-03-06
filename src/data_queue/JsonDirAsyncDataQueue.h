@@ -1,8 +1,7 @@
 #ifndef JSON_DIR_DATA_QUEUE_H__
 #define JSON_DIR_DATA_QUEUE_H__
 
-#include "DataQueueInterface.h"
-#include <thread>
+#include "AsyncDataQueueInterface.h"
 
 #define RANDOMIZE_TESTS
 #ifdef RANDOMIZE_TESTS
@@ -30,24 +29,23 @@ struct PathsTemplate
     fs::path data_path;
 };
 
-class JsonDirDataQueue : public DataQueueInterface< FftData >
+class JsonDirAsyncDataQueue : public AsyncDataQueueInterface< FftData, PathsTemplate >
 {
 public:
-    JsonDirDataQueue() = delete;
+    JsonDirAsyncDataQueue() = delete;
 
-    explicit JsonDirDataQueue( const fs::path & directory, const PathsTemplate p_template, const size_t num_threads );
+    explicit JsonDirAsyncDataQueue( const fs::path & directory, const PathsTemplate p_template, const size_t num_threads );
 
     inline void wait(){ pool_.wait(); }
 
-    // bool finish(){ return finish_; }
+    bool finish(){ return finish_; }
 
 private:
     void collectData();
 
     const PathsTemplate paths_;
     const fs::path directory_;
-    BS::light_thread_pool pool_;
-    // bool finish_{ false };
+    bool finish_{ false };
 };
 
 #endif // JSON_DIR_DATA_QUEUE_H__

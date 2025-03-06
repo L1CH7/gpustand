@@ -47,7 +47,7 @@ public:
         return q_.size();
     }
 
-private:
+protected:
     virtual void collectData() = 0;
 
     std::queue< std::unique_ptr< Data_Tp > > q_;

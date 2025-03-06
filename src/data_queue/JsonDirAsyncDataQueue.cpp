@@ -1,17 +1,17 @@
-#include "JsonDirDataQueue.h"
+#include "JsonDirAsyncDataQueue.h"
 
-JsonDirDataQueue::JsonDirDataQueue( const fs::path & directory, const PathsTemplate p_template, const size_t num_threads )
-:   paths_( p_template ),
-    directory_( directory ),
-    pool_( num_threads )
+JsonDirAsyncDataQueue::JsonDirAsyncDataQueue( const fs::path & directory, const PathsTemplate p_template, const size_t num_threads )
+:   AsyncDataQueueInterface< FftData, PathsTemplate >( num_threads ),
+    paths_( p_template ),
+    directory_( directory )
 {        
     collectData();
 }
 
 void
-JsonDirDataQueue::collectData()
+JsonDirAsyncDataQueue::collectData()
 {
-    // finish_ = false;
+    finish_ = false;
     std::vector< fs::path > testcases_vector;
     for( auto & test_dir : fs::directory_iterator{ directory_ } )
         if( fs::is_directory( test_dir ) )
@@ -30,8 +30,8 @@ JsonDirDataQueue::collectData()
     BS::synced_stream ss( std::cout );
     ss.println("Collecting data...");
 
-#ifdef WAIT_FOR_DIR_COUNT 
     size_t index = 0;
+#ifdef WAIT_FOR_DIR_COUNT 
     size_t wait_for_dir_count = WAIT_FOR_DIR_COUNT;
 #endif
 
@@ -42,12 +42,13 @@ JsonDirDataQueue::collectData()
     // };
     for( auto & testcase : testcases_vector )
     {
+        ++index;
         // ++i;
         // auto task = [ testcase, this, &ss, &mul_str, i ]
         auto task = [ testcase, this, &ss ]
         { 
             // ss.println( "\r\b"s + mul_str(">"s, i) ); // incorrect progress bar...
-            std::cout << ">";
+            // std::cout << ">";
             FftParams params = readJsonParams( testcase / paths_.params_path );
             std::vector< int > mseq = readVectorFromJsonFile< int >( testcase / paths_.mseq_path );
             auto [polar0, polar1] = readVectorFromJsonFile2Polars< std::complex< int > >( testcase / paths_.data_path );
@@ -70,7 +71,6 @@ JsonDirDataQueue::collectData()
 #ifdef PARALLELL_READING
         pool_.detach_task( task );
 #ifdef WAIT_FOR_DIR_COUNT 
-        ++index;
         if( index == wait_for_dir_count )
             pool_.wait();
 #endif
@@ -84,5 +84,5 @@ JsonDirDataQueue::collectData()
 #endif
     ss.println();
     ss.println("Data collected!");
-    // finish_ = true;
+    finish_ = true;
 }

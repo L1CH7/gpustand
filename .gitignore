@@ -2,8 +2,9 @@ build
 old_src
 result
 diffs.sh
-io_server
+
 testcases
+reports
 
 *.tar.gz
 data
