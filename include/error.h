@@ -6,7 +6,7 @@
 
 // Color printing for errors and warnings
 
-#define COLOR(is_bold, color_id) "\033["#is_bold";"#color_id"m" // "\033[0;31m" corresponds to red
+#define COLOR( is_bold, color_id ) "\033["#is_bold";"#color_id"m" // "\033[0;31m" corresponds to red
 #define DARK            COLOR(0, 30)
 #define RED             COLOR(0, 31) 
 #define GREEN           COLOR(0, 32)
@@ -25,9 +25,9 @@
 #define BOLD_WHITE      COLOR(1, 37)
 #define DEFAULT         COLOR(0, 0)
 
-#define ERR_    BOLD_RED
-#define WARN_   BOLD_YELLOW
-#define DFLT_   DEFAULT
+#define ERR_            BOLD_RED
+#define WARN_           BOLD_YELLOW
+#define DFLT_           DEFAULT
 
 static std::string error_str( const std::string & str )
 {
@@ -43,23 +43,5 @@ static std::string focus_str( const std::string & str )
 {
     return GREEN + str + DFLT_;
 }
-
-// user-defined literal for printing red characters
-// inline std::string operator ""_red( const char * str, const size_t len )
-// {
-//     // std::string s = "\033[0;31m" // red text colour
-//     // + std::string( str )
-//     // + "\033[0;0m"; // default text colour
-//     return error_str( std::string( str, len ) );
-// }
-
-// // user-defined literal for printing red characters
-// inline std::string operator ""_magenta( const char * str, const size_t len )
-// {
-//     // std::string s = "\033[0;35m" // red text colour
-//     // + std::string( str )
-//     // + "\033[0;0m"; // default text colour
-//     return warn_str( std::string( str, len ) );
-// }
 
 #endif // ERROR_H__
