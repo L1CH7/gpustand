@@ -43,6 +43,7 @@ struct FftParams
     // FftParams( FftParams && ) = delete;
     // FftParams & operator=( const FftParams & ) = default;
     // FftParams & operator=( FftParams && ) = delete;
+    std::string test_name;
 };
 
 struct FftData

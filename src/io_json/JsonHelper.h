@@ -95,6 +95,7 @@ to_json( json & j, const TimeResult & t )
     }
     j["fft"] = get_stamps( t.fft_start, t.fft_end );
     j["read_data"] = get_stamps( t.read_start, t.read_end );
+    j["cpu_start_point"] = t.cpu_start_point;
 }
 
 
