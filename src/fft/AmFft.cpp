@@ -15,8 +15,9 @@ AmFft::AmFft( std::shared_ptr< ProgramHandler > handler, FftData & data )
 TimeResult
 AmFft::compute()
 {
-    std::cout<<"AmFft computing!\n";
-    const uint32_t sinArrLen = 1 << 19; // 2^19 = 524288
+    std::stringstream ss;
+    ss << "AmFft computing! Test:" << params_.test_name << std::endl;
+    std::cout << ss.str();    const uint32_t sinArrLen = 1 << 19; // 2^19 = 524288
     uint32_t N = 1 << params_.log2N;
 
     uint32_t group_log2 = 8;

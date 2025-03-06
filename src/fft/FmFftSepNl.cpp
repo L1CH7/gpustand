@@ -15,8 +15,9 @@ FmFftSepNl::FmFftSepNl( std::shared_ptr< ProgramHandler > handler, FftData & dat
 TimeResult
 FmFftSepNl::compute()
 {
-    std::cout<<"FmFftSepNl computing!\n";
-    const uint32_t sinArrLen = 524288; //2^19
+    std::stringstream ss;
+    ss << "FmFft (SepNL) computing! Test:" << params_.test_name << std::endl;
+    std::cout << ss.str();    const uint32_t sinArrLen = 524288; //2^19
     uint32_t N = 1 << params_.log2N;
 
     uint32_t group_log2 = 8;
