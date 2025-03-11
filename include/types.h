@@ -110,4 +110,16 @@ struct TimeResult
     uint64_t cpu_start_point;
 };
 
+struct FftReport
+{
+    fs::path report_dir;
+    fs::path result_dir;
+    size_t task_index;
+    fs::path data_path;
+    std::vector< std::complex< float > > out_array;
+    uint8_t polar;
+    FftParams params;  
+    TimeResult time;
+};
+
 #endif // TYPES_H__

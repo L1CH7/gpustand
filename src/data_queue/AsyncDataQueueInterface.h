@@ -20,13 +20,13 @@ public:
 
     ~AsyncDataQueueInterface() = default;
 
-    void push( Data_Tp && data )
+    void push( Data_Tp && data ) override
     {
         std::scoped_lock( queue_mutex_ );
         q_.push( std::make_unique< Data_Tp >( std::move( data ) ) );
     }
 
-    std::unique_ptr< Data_Tp > pop()
+    std::unique_ptr< Data_Tp > pop() override
     {
         std::scoped_lock( queue_mutex_ );
         auto popped{ std::move( q_.front() ) };
@@ -34,13 +34,13 @@ public:
         return popped;
     }
 
-    bool empty()
+    bool empty() override
     {
         std::scoped_lock( queue_mutex_ );
         return q_.empty();
     }
 
-    size_t size()
+    size_t size() override
     {
         std::scoped_lock( queue_mutex_ );
         return q_.size();
@@ -48,16 +48,16 @@ public:
 
     std::unique_ptr< Data_Tp > popOrWait()
     {
+        if( empty() )
+            return nullptr;
+
         if( futures_.ready_count() == 0 )
             futures_.front().wait();
         
-        
-
-        if( !empty() )
-            return pop();
+        return pop();
 
         // pool_.
-        return nullptr;
+        // return nullptr;
     }
 
 protected:
@@ -79,8 +79,7 @@ protected:
 
     virtual Get_Tp getOneData() = 0;
 
-
-    std::mutex queue_mutex_{};
+    mutable std::mutex queue_mutex_{};
 
     BS::light_thread_pool pool_;
 
