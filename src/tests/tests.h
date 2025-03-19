@@ -5,14 +5,8 @@
 #include <CLDefs.h>
 #include <GpuFourier.h>
 #include <GpuInit.h>
-#include <IoJson.h>
 #include <config.h>
 #include <error.h>
-
-#ifdef ENABLE_DEBUG_COMPUTATIONS
-#   include <debug_computations.h> 
-    // std::unique_ptr< fs::path > events_path = nullptr;
-#endif
 
 struct Paths
 {
@@ -23,12 +17,18 @@ struct Paths
     fs::path result_time_path;
 };
 
-void TestTemplate1Polar( FftCreator & fft, const Paths & paths, std::string polar_json_key );
+// void TestTemplate1Polar( FftCreator & fft, const Paths & paths, std::string polar_json_key );
 
-void TestTemplate2Polars( FftCreator & fft, const Paths & paths );
+// void TestTemplate2Polars( FftCreator & fft, const Paths & paths );
 
-void RunSingleTest( FftCreator & fft, const fs::path & test_dir );
+// void RunSingleTest( std::shared_ptr< ProgramHandler > handler, const fs::path & test_dir );
 
-void RunAllTests( FftCreator & fft, const fs::path & testcases_dir );
+void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num = 1, size_t computing_thread_num = 1, size_t write_thread_num = 1 );
+
+// void RunDirTest();
+
+void RunTestIterateKGD();
+
+void RunSomeTests();
 
 #endif // TESTS_H__

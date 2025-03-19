@@ -108,6 +108,7 @@ struct TimeResult
     uint64_t read_end;
 
     uint64_t cpu_start_point;
+    uint64_t cpu_end_point;
 };
 
 struct FftReport
@@ -120,6 +121,13 @@ struct FftReport
     uint8_t polar;
     FftParams params;  
     TimeResult time;
+};
+
+struct PathsTemplate
+{
+    fs::path params_path;
+    fs::path mseq_path;
+    fs::path data_path;
 };
 
 #endif // TYPES_H__

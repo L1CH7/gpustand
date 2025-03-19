@@ -15,7 +15,8 @@ public:
 
     AsyncDataQueueInterface( const size_t num_threads )
     :   pool_( num_threads ),
-        stop_( false )
+        stop_( false ),
+        stop_reading_( false )
     {
     }
 
@@ -48,9 +49,10 @@ public:
         return this->q_.empty();
     }
 
-    bool Stopped() const
+    bool stopped() //const
     {
-        // std::scoped_lock< std::mutex > lock( queue_mutex_ );
+        std::scoped_lock< std::mutex > lock( queue_mutex_ );
+        stop_ = pool_.get_tasks_running() == 0;
         return stop_;
     }
 
@@ -85,6 +87,8 @@ protected:
     std::condition_variable cv_{};
 
     BS::light_thread_pool pool_;
+
+    std::atomic< bool > stop_reading_;
 
     bool stop_;
 };

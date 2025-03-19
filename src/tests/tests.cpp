@@ -1,144 +1,128 @@
 #include "tests.h"
+#include <JsonReadDataQueue.h>
+#include <JsonWriteDataQueue.h>
+#include <error.h>
 
-void TestTemplate2Polars( FftCreator & fft, const Paths & paths )
+// void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num = 1, size_t computing_thread_num = 1, size_t write_thread_num = 1 )
+void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num, size_t computing_thread_num, size_t write_thread_num )
 {
-    FftParams params = readJsonParams( paths.params_path, paths.mseq_path );
+    // fs::path testcases = root_dir / "testcases/FM_copies"; // /path/to/all/testcases/dir
+    fs::path testcases = root_dir / "testcases/FM"; // /path/to/all/testcases/dir
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t( now );
 
-    auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< int > >( paths.input_path );
-    auto polar0_ptr = reinterpret_cast< cl_int2 * >( polar0.data() );
-    auto polar1_ptr = reinterpret_cast< cl_int2 * >( polar1.data() );
+    std::stringstream ss;
+    ss << "report_" << std::put_time( std::localtime( &in_time_t ), "%Y-%m-%d_%X" );
+    fs::path report_root_dir = root_dir / "reports" / ss.str();
+    fs::path report_dir = report_root_dir / "times";
+    if( !fs::exists( report_dir ) )
+        fs::create_directories( report_dir );
+    fs::path result_dir = report_root_dir / "data";
+    if( !fs::exists( result_dir ) )
+        fs::create_directories( result_dir );
 
-    // FftCreator fft( handler, params, polar0_ptr );
-    fft.update( params, polar0_ptr );
-    auto times0 = fft.compute();
-    polar0.clear();
-    auto res0_ptr = fft.getFftResult();
 
-    fft.update( params, polar1_ptr );
-    auto times1 = fft.compute();
-    polar1.clear();
-    auto res1_ptr = fft.getFftResult();
-
-    // Get output cl_float2 array ant cast it to vector
-    size_t res_size = params.nl * params.kgd * params.kgrs;
-    auto res0_complex_ptr = reinterpret_cast< std::complex< float > * >( res0_ptr );
-    auto res1_complex_ptr = reinterpret_cast< std::complex< float > * >( res1_ptr );
-
-    json j_out;
-    std::vector< std::vector< std::complex< float > > > resv0rays( params.nl );
-    std::vector< std::vector< std::complex< float > > > resv1rays( params.nl );
-    for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
-    {
-        std::stringstream key0, key1;
-        resv0rays[i] = std::vector< std::complex< float > >( res0_complex_ptr + offset, res0_complex_ptr + offset + step );
-        key0 << "Ray" << i << "Polar0";
-        j_out[key0.str()] = resv0rays[i];
-
-        resv1rays[i] = std::vector< std::complex< float > >( res1_complex_ptr + offset, res1_complex_ptr + offset + step );
-        key1 << "Ray" << i << "Polar1";
-        j_out[key1.str()] = resv1rays[i];
-    }
-    // for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
-    // {
-    //     std::string ray = "Ray" + std::to_string( i );
-    //     resv0rays[i] = std::vector< std::complex< float > >( res0_complex_ptr + offset, res0_complex_ptr + offset + step );
-    //     j_out["Polar0"][ray] = resv0rays[i];
-
-    //     resv1rays[i] = std::vector< std::complex< float > >( res1_complex_ptr + offset, res1_complex_ptr + offset + step );
-    //     j_out["Polar1"][ray] = resv1rays[i];
-    // }
-    resv0rays.clear();
-    resv1rays.clear();
-    std::ofstream ofs( paths.result_data_path );
-    ofs << j_out.dump(4);
-    // writeTimeStampsToFile( paths.result_time_path.parent_path() / "time0.out", times0 );
-    // writeTimeStampsToFile( paths.result_time_path.parent_path() / "time1.out", times1 );
-    writeTimeStampsToJsonFile( paths.result_time_path.parent_path() / "time0.json", times0 );
-    writeTimeStampsToJsonFile( paths.result_time_path.parent_path() / "time1.json", times1 );
-}
-
-void TestTemplate1Polar( FftCreator & fft, const Paths & paths, std::string polar_json_key )
-{
-    FftParams params = readJsonParams( paths.params_path, paths.mseq_path );
-
-    // Read input vector and cast it to cl_int2
-    auto polar = readVectorFromJsonFile1Polar< std::complex< int > >( paths.input_path, polar_json_key );
-    auto polar_ptr = reinterpret_cast< cl_int2 * >( polar.data() );
-
-    // FftCreator fft( handler, params, polar0_ptr );
-    fft.update( params, polar_ptr );
-    auto times = fft.compute();
-    auto res_ptr = fft.getFftResult();
-
-    // Get output cl_float2 array ant cast it to vector
-    size_t res_size = params.nl * params.kgd * params.kgrs;
-    auto res_complex_ptr = reinterpret_cast< std::complex< float > * >( res_ptr );
-
-    json j_out;
-    std::vector< std::vector< std::complex< float > > > resv0rays( params.nl );
-    for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
-    {
-        std::stringstream key0, key1;
-        resv0rays[i] = std::vector< std::complex< float > >( res_complex_ptr + offset, res_complex_ptr + offset + step );
-        key0 << "Ray" << i << "Polar" << polar_json_key.back();
-        j_out[key0.str()] = resv0rays[i];
-    }
-    // for( size_t i = 0, offset = 0, step = res_size / params.nl; i < params.nl; ++i, offset += step )
-    // {
-    //     std::string ray = "Ray" + std::to_string( i );
-    //     resv0rays[i] = std::vector< std::complex< float > >( res_complex_ptr + offset, res_complex_ptr + offset + step );
-    //     j_out["Polar0"][ray] = resv0rays[i];
-    // }
-
-    std::ofstream ofs( paths.result_data_path );
-    ofs << j_out.dump(4);
-    writeTimeStampsToJsonFile( paths.result_time_path.parent_path(), times );
-}
-
-void RunSingleTest( FftCreator & fft, const fs::path & test_dir )
-{
-    // std::mutex m_;
-    fs::path result_dir;
-    // {
-        // std::scoped_lock l( m_ );
-        std::stringstream ss;
-        ss << "test:" << test_dir.c_str() << '\n';
-        std::cout << ss.str();
-
-        result_dir = test_dir      / "result";
-        if( fs::exists( result_dir ) )
-            fs::remove_all( result_dir );
-        fs::create_directory( result_dir );
-    // }
-
-#   ifdef ENABLE_DEBUG_COMPUTATIONS
-    // print all middle-events to result dir!
-    changeEventsPath( result_dir );
-#   endif
-
-    Paths paths
-    {
-        .params_path        = test_dir      / "in_args.json",
-        .input_path         = test_dir      / "out.json",
-        .mseq_path          = test_dir      / "tfpMSeqSigns.json",
-        .result_data_path   = result_dir    / "data.json",
-        .result_time_path   = result_dir    / "time.out"
+    PathsTemplate data_paths{
+        .params_path = "in_args.json",
+        .mseq_path = "tfpMSeqSigns.json",
+        .data_path = "out.json"
     };
-    TestTemplate2Polars( fft, paths );
-}
+    size_t hardware_concurrency = std::thread::hardware_concurrency();
+    // size_t computing_thread_num = 1;
+    // size_t write_thread_num = 1;
+    // size_t read_thread_num = 1;//hardware_concurrency - computing_thread_num - write_thread_num;
 
-void RunAllTests( FftCreator & fft, const fs::path & testcases_dir )
-{
-    // if( !handler )
-    // {
-    //     std::cout << error_str( "No program handler created for tests\n" );
-    // }
+    JsonReadDataQueue rdq( read_thread_num, testcases, data_paths );
+    // std::vector< fs::path > testcases_v;
+    // testcases_v.push_back( testcases / "005");
+    // testcases_v.push_back( testcases / "006");
+    // // testcases_v.push_back( testcases / "003");
+    // JsonReadDataQueue rdq( read_thread_num, testcases_v, data_paths );
+    rdq.startReading();
+    rdq.wait(); // wait for all tasks to be readed!
+    std::cout << warn_str("end reading!\n");
 
-    for( auto & testcase : fs::directory_iterator{ testcases_dir } )
-    {
-        if( fs::is_directory( testcase ) )
-        {
-            RunSingleTest( fft, testcase.path() );
+    JsonWriteDataQueue wdq( read_thread_num );
+
+    std::vector< std::shared_ptr < FftCreator > > fft_instances( computing_thread_num, nullptr );
+    BS::light_thread_pool pool( 
+        computing_thread_num,
+        [handler, &fft_instances]( std::size_t thread_id ){ 
+            fft_instances.at( thread_id ) = std::make_shared< FftCreator >( handler ); 
         }
+    );
+
+    // for( size_t i = 0; i < rdq.size(); ++i )
+    // for( size_t i = 0; !rdq.finish(); ++i )
+    size_t task_index = 0;
+    // can read data if:
+    //  rdq is stopped but not empty
+    //  rdq empty but not stopped (case of not waiting for ackquiring data)
+    // resume: read if true: stop xor empty (or stop != empty)
+    while( rdq.stopped() != rdq.empty() )
+    {
+        FftReport report{
+            .report_dir = report_dir,
+            .result_dir = result_dir,
+            .task_index = task_index
+        };
+        // report.time.cpu_start_point = in_time_t;
+        auto task = [&rdq, &wdq, &fft_instances, report ] mutable
+        {
+            // size_t thread_id = BS::this_thread::get_index().value_or(0);
+            size_t thread_id = BS::this_thread::get_index().value_or(-1);
+            if( thread_id > fft_instances.size() )
+            {
+                std::cerr << error_str("Invalid thread_id!\n");
+                return;
+            }
+            try
+            {
+                auto data = rdq.pop();
+                if( !data )
+                    return; // acquired empty data!
+
+                FftParams params = data->params;
+                uint8_t polar = data->polar;
+                fs::path data_path = data->data_path;
+                fft_instances[thread_id]->update( *data );
+                auto time_start = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
+                auto time = fft_instances[thread_id]->compute();
+
+                auto time_end = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
+
+                time.cpu_start_point = time_start / 1000.;
+                time.cpu_end_point = time_end / 1000.;
+                auto out_array = fft_instances[thread_id]->getFftResult();
+
+                report.data_path = data_path;
+                report.out_array = std::move( out_array );
+                report.polar = polar;
+                report.params = params;
+                report.time = time;
+                wdq.writeData( std::move( report ) );
+            }
+            catch( const cl::Error & e )
+            {
+                std::stringstream ss;
+                ss << error_str( e.what() ) << std::endl;
+                ss << error_str( getErrorString( e.err() ) ) << std::endl;
+                ss << error_str("test#") << report.params.test_name << std::endl;
+                std::cerr << ss.str();
+                throw e;
+            }
+            catch( const std::exception & e )
+            {
+                std::cerr << error_str(e.what()) <<std::endl;
+                throw e;
+            }
+        };
+        pool.detach_task( task );
+        ++task_index;
     }
+    if( rdq.stopped() && rdq.empty() )
+        pool.purge();
+    pool.wait();
+    std::cout << focus_str("end computing\n");
+
 }

@@ -29,17 +29,17 @@
 #define WARN_           BOLD_YELLOW
 #define DFLT_           DEFAULT
 
-static std::string error_str( const std::string & str )
+static inline std::string error_str( const std::string & str )
 {
     return ERR_ + str + DFLT_;
 }
 
-static std::string warn_str( const std::string & str )
+static inline std::string warn_str( const std::string & str )
 {
     return WARN_ + str + DFLT_;
 }
 
-static std::string focus_str( const std::string & str )
+static inline std::string focus_str( const std::string & str )
 {
     return GREEN + str + DFLT_;
 }

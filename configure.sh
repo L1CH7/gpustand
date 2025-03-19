@@ -11,14 +11,16 @@ fi
 CMAKE_CXX_COMPILER="x86_64-linux-gnu-g++"
 
 # CMAKE_CXX_FLAGS="-pipe -O2 -funroll-loops -Wall -Wextra -Wformat=0 -Wmaybe-uninitialized"
-CMAKE_CXX_FLAGS="-pthread -pipe -funroll-loops"
-# CMAKE_CXX_FLAGS="-O3 -pthread -pipe -funroll-loops"
+# CMAKE_CXX_FLAGS="-pthread -pipe -funroll-loops"
+CMAKE_CXX_FLAGS="-O0 -ggdb -pthread -pipe -funroll-loops -fno-aggressive-loop-optimizations"
+# CMAKE_CXX_FLAGS="-O2 -pthread -pipe -funroll-loops -fno-aggressive-loop-optimizations"
+# CMAKE_CXX_FLAGS="-O3 -pthread -pipe -funroll-loops -fno-aggressive-loop-optimizations"
 
 BUILD_DIR="build"
 
-if [ -d "$BUILD_DIR" ]; then
-    rm -rf "$BUILD_DIR"
-fi
+# if [ -d "$BUILD_DIR" ]; then
+#     rm -rf "$BUILD_DIR"
+# fi
 
 mkdir -p "$BUILD_DIR"
 

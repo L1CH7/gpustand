@@ -25,7 +25,7 @@ public:
 protected:
     void invariant();
 
-    bool ready{ true };
+    bool ready_{ true };
     std::shared_ptr< ProgramHandler > handler_;
     FftParams params_;
     std::vector< int > mseq_;

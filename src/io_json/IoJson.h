@@ -34,6 +34,7 @@ readVectorFromJsonFile( const fs::path & filepath )
     std::ifstream ifs( filepath );
     json j = json::parse( ifs );
     ifs.close();
+    std::cout << "mseq read!\n";
     return std::vector< T >( j );
 }
 
@@ -59,6 +60,7 @@ readVectorFromJsonFile2Polars( const fs::path & filepath )
     }
     json j = json::parse( ifs );
     ifs.close();
+    std::cout << "2polar read!\n";
     std::vector< T > polar0( j["polar0"] ), polar1( j["polar1"] );
     return std::move( std::make_pair( polar0, polar1 ) );
 }

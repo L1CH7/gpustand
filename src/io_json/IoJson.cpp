@@ -22,7 +22,7 @@ readJsonParams( const fs::path & filepath )
     }
     else
     {
-        // std::cout << "FM params read!!!\n";
+        std::cout << "FM params read!!!\n";
         params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
     }
     params.test_name = filepath.parent_path().filename().c_str();

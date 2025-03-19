@@ -10,6 +10,8 @@
 #include <JsonWriteDataQueue.h>
 #include <BS_thread_pool.hpp>
 
+#include <tests.h>
+
 std::shared_ptr< ProgramHandler > Prepare( int argc, char ** argv, fs::path kernel_path )
 {
     // Choose your platform & device from `$ clinfo -l` (in my case platform_id refers to NVIDIA CUDA). 
@@ -46,112 +48,6 @@ std::shared_ptr< ProgramHandler > Prepare( int argc, char ** argv, fs::path kern
     return handler;
 }
 
-void run( std::shared_ptr< ProgramHandler > handler, fs::path root_dir )
-{
-    // fs::path testcases = root_dir / "testcases/FM_copies"; // /path/to/all/testcases/dir
-    fs::path testcases = root_dir / "testcases/FM"; // /path/to/all/testcases/dir
-    auto now = std::chrono::system_clock::now();
-    auto in_time_t = std::chrono::system_clock::to_time_t( now );
-
-    std::stringstream ss;
-    ss << "report_" << std::put_time( std::localtime( &in_time_t ), "%Y-%m-%d_%X" );
-    fs::path report_root_dir = root_dir / "reports" / ss.str();
-    fs::path report_dir = report_root_dir / "times";
-    if( !fs::exists( report_dir ) )
-        fs::create_directories( report_dir );
-    fs::path result_dir = report_root_dir / "data";
-    if( !fs::exists( result_dir ) )
-        fs::create_directories( result_dir );
-
-
-    PathsTemplate data_paths{
-        .params_path = "in_args.json",
-        .mseq_path = "tfpMSeqSigns.json",
-        .data_path = "out.json"
-    };
-    size_t hardware_concurrency = std::thread::hardware_concurrency();
-    size_t computing_thread_num = 1;
-    size_t write_thread_num = 1;
-    size_t read_thread_num = 1;//hardware_concurrency - computing_thread_num - write_thread_num;
-
-    JsonReadDataQueue rdq( read_thread_num, testcases, data_paths );
-    rdq.startReading();
-    rdq.wait(); // wait for all tasks to be readed!
-
-    JsonWriteDataQueue wdq( read_thread_num );
-
-    std::vector< std::shared_ptr < FftCreator > > fft_instances( computing_thread_num, nullptr );
-    BS::light_thread_pool pool( 
-        computing_thread_num,
-        [handler, &fft_instances]( std::size_t thread_id ){ 
-            fft_instances.at( thread_id ) = std::make_shared< FftCreator >( handler ); 
-        }
-    );
-
-    // for( size_t i = 0; i < rdq.size(); ++i )
-    // for( size_t i = 0; !rdq.finish(); ++i )
-    size_t task_index = 0;
-    // can read data if:
-    //  rdq is stopped but not empty
-    //  rdq empty but not stopped (case of not waiting for ackquiring data)
-    // resume: read if true: stop xor empty (or stop != empty)
-    while( rdq.Stopped() != rdq.empty() )
-    {
-        FftReport report{
-            .report_dir = report_dir,
-            .result_dir = result_dir,
-            .task_index = task_index
-        };
-        // report.time.cpu_start_point = in_time_t;
-        auto task = [&rdq, &wdq, &fft_instances, &report, in_time_t]
-        {
-            // size_t thread_id = BS::this_thread::get_index().value_or(0);
-            size_t thread_id = BS::this_thread::get_index().value_or(-1);
-            if( thread_id > fft_instances.size() )
-            {
-                std::cerr << error_str("Invalid thread_id!\n");
-                return;
-            }
-
-            try
-            {
-                auto data = rdq.pop();
-                FftParams params = data->params;
-                uint8_t polar = data->polar;
-                fs::path data_path = data->data_path;
-                fft_instances[thread_id]->update( *data );
-                auto time = fft_instances[thread_id]->compute();
-                time.cpu_start_point = in_time_t;
-                auto out_array = fft_instances[thread_id]->getFftResult();
-
-                report.data_path = data_path;
-                report.out_array = std::move( out_array );
-                report.polar = polar;
-                report.params = params;
-                report.time = time;
-                wdq.writeData( std::move( report ) );
-            }
-            catch( const cl::Error & e )
-            {
-                std::stringstream ss;
-                ss << error_str(e.what()) << std::endl;
-                ss << error_str( getErrorString( e.err() ) ) << std::endl;
-                ss << error_str("test#") << report.params.test_name << std::endl;
-                std::cerr << ss.str();
-                throw e;
-            }
-            catch( const std::exception & e )
-            {
-                std::cerr << error_str(e.what()) <<std::endl;
-                throw e;
-            }
-        };
-        pool.detach_task( task );
-        ++task_index;
-    }
-    pool.wait();
-
-}
 
 int main( int argc, char ** argv )
 {
@@ -160,13 +56,12 @@ int main( int argc, char ** argv )
     std::shared_ptr< ProgramHandler > handler = Prepare( argc, argv, root_dir / "src/fft/GpuKernels.cl" );
     if( !handler )
         exit( 1 );
-
     {
-        run( handler, root_dir );
+        RunAllTests( handler, root_dir, 10, 1, 1 );
     }
     // {   // Single test run example. All datafiles must be in same directory(test_dir)
     //     fs::path test_dir = root_dir / "testcases/FM" / "004"; // /path/to/test/dir
-    //     RunSingleTest( fft, test_dir );
+    //     RunSingleTest( handler, test_dir );
     // }
 
     // {   // All testcases run example. 

@@ -45,6 +45,9 @@ FftInterface::invariant()
         std::cerr << error_str( "No OpenCL handler found" );
         assert(0);
     }
+    if( !ready_ ) // if dummy skip
+        return;
+
     if( params_.nl < 1 || params_.kgd < 1 || params_.kgrs < 1 )
     {
         std::cerr << error_str( "Incorrect params" );
@@ -70,7 +73,7 @@ public:
     :   FftInterface( handler )
     {
         // flag identificates invalid fft interface
-        ready = false;
+        ready_ = false;
         std::cout << "Dummy FFT instance c-tor!\n";
     }
     
@@ -101,7 +104,7 @@ FftCreator::hasFftInterface()
 void
 FftCreator::update( FftData & new_data )
 {
-    if( fft_->ready && new_data.params.is_am == fft_->params_.is_am )
+    if( fft_->ready_ && new_data.params.is_am == fft_->params_.is_am )
         fft_->update( new_data );
     else
         makeFftInterface( fft_->handler_, new_data );
