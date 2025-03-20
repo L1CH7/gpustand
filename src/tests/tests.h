@@ -22,6 +22,7 @@ struct Paths
 // void TestTemplate2Polars( FftCreator & fft, const Paths & paths );
 
 // void RunSingleTest( std::shared_ptr< ProgramHandler > handler, const fs::path & test_dir );
+void testExecutionPool( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num = 1, size_t computing_thread_num = 1, size_t write_thread_num = 1 );
 
 void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num = 1, size_t computing_thread_num = 1, size_t write_thread_num = 1 );
 

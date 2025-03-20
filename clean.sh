@@ -2,4 +2,4 @@
 
 rm -rf build
 
-rm -rf testcases/*/*/result
+rm -rf reports/*

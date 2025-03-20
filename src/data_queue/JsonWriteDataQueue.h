@@ -20,21 +20,19 @@ public:
         std::string test_name = r.data_path.filename().native();
 
         std::stringstream ss_result;
-        ss_result << test_name << "_result_polar" << std::to_string( r.polar ) 
-            << "_" << r.task_index << ".json";
+        ss_result << test_name << "_result_polar" << std::to_string( r.polar ) << "_" << r.task_index << ".json";
         std::string result_name = ss_result.str();
 
         std::stringstream ss_report;
-        ss_report << test_name << "_polar" << std::to_string( r.polar )
-            << "_" << r.task_index << ".json";
+        ss_report << test_name << "_polar" << std::to_string( r.polar ) << "_" << r.task_index << ".json";
         std::string report_name = ss_report.str();
         
         push( std::move( r ) );
         auto task = [this, result_name, report_name]
         {
             auto r = pop();
-            writeFftResultToJsonFile( r->result_dir / result_name, r->out_array, r->polar, r->params );
-            writeReportToJsonFile( r->report_dir / report_name, r->data_path, r->polar, r->params, r->time );
+            IoJson::writeFftResult( r->result_dir / result_name, r->out_array, r->polar, r->params );
+            IoJson::writeReport( r->report_dir / report_name, r->data_path, r->polar, r->params, r->time );
         };
         pool_.detach_task( task );
     }

@@ -1,7 +1,48 @@
 #include "tests.h"
 #include <JsonReadDataQueue.h>
 #include <JsonWriteDataQueue.h>
+#include <ExecutionPool.h>
 #include <error.h>
+
+
+void testExecutionPool( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num, size_t computing_thread_num, size_t write_thread_num )
+{
+    fs::path testcases = root_dir / "testcases/FM"; // /path/to/all/testcases/dir
+    ReadPathsTemplate data_paths_template{
+        .params_path = "in_args.json",
+        .mseq_path = "tfpMSeqSigns.json",
+        .data_path = "out.json"
+    };
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t( now );
+
+    std::stringstream ss;
+    ss << "report_" << std::put_time( std::localtime( &in_time_t ), "%Y-%m-%d_%X" );
+    fs::path report_root_dir = root_dir / "reports" / ss.str();
+    fs::path report_dir = report_root_dir / "times";
+    if( !fs::exists( report_dir ) ) fs::create_directories( report_dir );
+    fs::path result_dir = report_root_dir / "data";
+    if( !fs::exists( result_dir ) ) fs::create_directories( result_dir );
+    FftReport reports_template{
+        .report_dir = report_dir,
+        .result_dir = result_dir,
+    };
+    // auto rdq = std::make_shared< JsonReadDataQueue >( read_thread_num, testcases, data_paths_template );
+    std::vector< fs::path > testcases_v;
+    testcases_v.push_back( testcases / "021");
+    testcases_v.push_back( testcases / "022");
+    testcases_v.push_back( testcases / "023");
+    // testcases_v.push_back( testcases / "006");
+    // testcases_v.push_back( testcases / "003");
+    auto rdq = std::make_shared< JsonReadDataQueue >( read_thread_num, testcases_v, data_paths_template );
+    auto wdq = std::make_shared< JsonWriteDataQueue >( write_thread_num );
+    ExecutionPool exec_pool{ handler, rdq, wdq, reports_template, computing_thread_num };
+
+    // rdq->startReading();
+    rdq->startReadingSplitKGRS( 14 );
+    rdq->wait();
+    exec_pool.execute();
+}
 
 // void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num = 1, size_t computing_thread_num = 1, size_t write_thread_num = 1 )
 void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, size_t read_thread_num, size_t computing_thread_num, size_t write_thread_num )
@@ -22,15 +63,11 @@ void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, 
         fs::create_directories( result_dir );
 
 
-    PathsTemplate data_paths{
+    ReadPathsTemplate data_paths{
         .params_path = "in_args.json",
         .mseq_path = "tfpMSeqSigns.json",
         .data_path = "out.json"
     };
-    size_t hardware_concurrency = std::thread::hardware_concurrency();
-    // size_t computing_thread_num = 1;
-    // size_t write_thread_num = 1;
-    // size_t read_thread_num = 1;//hardware_concurrency - computing_thread_num - write_thread_num;
 
     JsonReadDataQueue rdq( read_thread_num, testcases, data_paths );
     // std::vector< fs::path > testcases_v;
@@ -67,7 +104,7 @@ void RunAllTests( std::shared_ptr< ProgramHandler > handler, fs::path root_dir, 
             .task_index = task_index
         };
         // report.time.cpu_start_point = in_time_t;
-        auto task = [&rdq, &wdq, &fft_instances, report ] mutable
+        auto task = [&rdq, &wdq, &fft_instances, report ]() mutable
         {
             // size_t thread_id = BS::this_thread::get_index().value_or(0);
             size_t thread_id = BS::this_thread::get_index().value_or(-1);

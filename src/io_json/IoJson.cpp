@@ -1,12 +1,12 @@
 #include "IoJson.h"
 
 FftParams
-readJsonParams( const fs::path & filepath )
+IoJson::readParams( const fs::path & file_path )
 {
-    std::ifstream ifs( filepath );
+    std::ifstream ifs( file_path );
     if( !ifs )
     {
-        std::cerr << error_str( "Param file not opened" ) << std::endl;
+        std::cerr << error_str( "Params file not opened" ) << std::endl;
         return FftParams{ .nl = static_cast< uint >( -1 ) };
     }
     json j = json::parse( ifs );
@@ -22,31 +22,30 @@ readJsonParams( const fs::path & filepath )
     }
     else
     {
-        std::cout << "FM params read!!!\n";
+        // std::cout << "FM params read!!!\n";
         params.log2N = ( uint32_t )std::ceil( std::log2( ( double )params.dlstr / params.ndec ) );
     }
-    params.test_name = filepath.parent_path().filename().c_str();
+    params.test_name = file_path.parent_path().filename().c_str();
     return std::move( params );
 }
 
-void
-writeTimeStampsToJsonFile( const fs::path & filepath, const TimeResult & t )
+std::vector< int >
+IoJson::readMseq( const fs::path & mseq_path )
 {
-    std::ofstream ofs( filepath, std::ios::trunc );
-    if (!ofs.is_open()) {
-        std::cerr << error_str( "TimeResult file not opened" ) << std::endl;
-        return;
-    }
-    json j( t );
-    ofs << j.dump(4);
-    ofs.close();
+    return readVectorFromJsonFile< int >( mseq_path );
+}
+
+std::pair< std::vector< std::complex< int > >, std::vector< std::complex< int > > >
+IoJson::readStrobe( const fs::path & data_path )
+{
+    return readVectorFromJsonFile2Polars< std::complex< int > >( data_path );
 }
 
 // Report = times of one polar + params
 void
-writeReportToJsonFile( const fs::path & filepath, const std::string & report_path, const uint8_t polar, const FftParams & params, const TimeResult & t )
+IoJson::writeReport( const fs::path & file_path, const std::string & report_path, const uint8_t polar, const FftParams & params, const TimeResult & t )
 {
-    std::ofstream ofs( filepath, std::ios::trunc );
+    std::ofstream ofs( file_path, std::ios::trunc );
     if (!ofs.is_open()) {
         std::cerr << error_str( "TimeResult file not opened" ) << std::endl;
         return;
@@ -61,7 +60,7 @@ writeReportToJsonFile( const fs::path & filepath, const std::string & report_pat
 }
 
 void
-writeFftResultToJsonFile( const fs::path & filepath, std::vector< std::complex< float > > & out_array, const uint8_t polar, const FftParams & params )
+IoJson::writeFftResult( const fs::path & file_path, std::vector< std::complex< float > > & out_array, const uint8_t polar, const FftParams & params )
 {
     size_t res_size = params.nl * params.kgd * params.kgrs;
     auto res_complex_ptr = out_array.data();
@@ -76,7 +75,7 @@ writeFftResultToJsonFile( const fs::path & filepath, std::vector< std::complex< 
         j_out[key0.str()] = resv0rays[i];
     }
 
-    std::ofstream ofs( filepath );
+    std::ofstream ofs( file_path );
     ofs << j_out.dump(4);
     ofs.close();
 }

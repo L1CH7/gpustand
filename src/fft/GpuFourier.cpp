@@ -31,7 +31,11 @@ void
 FftInterface::update( FftData & new_data )
 {
     params_ = new_data.params;
-    mseq_ = std::move( new_data.mseq );
+    if( !params_.is_am )
+    {
+        mseq_ = std::move( new_data.mseq );
+        mseq_.resize( 1 << params_.log2N, 0 );
+    }
     data_array_ = std::move( new_data.data_array );
     out_array_ = std::vector< std::complex< float > >( params_.nl * params_.kgd * params_.kgrs, {0, 0} );
     invariant();
@@ -104,6 +108,7 @@ FftCreator::hasFftInterface()
 void
 FftCreator::update( FftData & new_data )
 {
+
     if( fft_->ready_ && new_data.params.is_am == fft_->params_.is_am )
         fft_->update( new_data );
     else

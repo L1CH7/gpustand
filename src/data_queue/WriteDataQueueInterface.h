@@ -16,20 +16,6 @@ public:
 
     ~WriteDataQueueInterface() = default;
 
-    // void startWriting()
-    // {
-    //     while( !stop_ )
-    //     {
-    //         auto task = [this]
-    //         {
-    //             // std::unique_ptr< Data_Tp > data = pop();
-    //             writeData( std::move( *pop() ));
-    //         }
-    //         if( !stop )
-    //             pool_.detach_task( task );
-    //     };
-    // }
-
     virtual void writeData( Data_Tp && data ) = 0;
 };
 

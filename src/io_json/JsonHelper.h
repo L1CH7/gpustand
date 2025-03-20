@@ -71,10 +71,10 @@ to_json( json & j, const TimeResult & t )
     {
         json stamp;
         double start, end, duration; // in milliseconds
-        double ms = 1. / 1000000.;
+        double ms_inv = 1000000.;
 
-        start = static_cast< double >( _start ) * ms;
-        end = static_cast< double >( _end ) * ms;
+        start = static_cast< double >( _start ) / ms_inv;
+        end = static_cast< double >( _end ) / ms_inv;
         duration = end - start;
 
         stamp["start"] = start;
@@ -95,8 +95,8 @@ to_json( json & j, const TimeResult & t )
     }
     j["fft"] = get_stamps( t.fft_start, t.fft_end );
     j["read_data"] = get_stamps( t.read_start, t.read_end );
-    j["cpu_start_point"] = t.cpu_start_point;
-    j["cpu_end_point"] = t.cpu_end_point;
+    j["cpu_start_point"] = static_cast< double >( t.cpu_start_point ) / 1000.;
+    j["cpu_end_point"] = static_cast< double >( t.cpu_end_point ) / 1000.;
 }
 
 

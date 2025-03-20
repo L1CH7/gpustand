@@ -123,11 +123,4 @@ struct FftReport
     TimeResult time;
 };
 
-struct PathsTemplate
-{
-    fs::path params_path;
-    fs::path mseq_path;
-    fs::path data_path;
-};
-
 #endif // TYPES_H__
