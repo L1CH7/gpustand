@@ -2,10 +2,6 @@
 
 #include <config.h>
 
-#ifdef ENABLE_DEBUG_COMPUTATIONS
-#   include <debug_computations.h>
-#endif
-
 FftInterface::FftInterface( std::shared_ptr< ProgramHandler > handler, FftData & data )   
 :   handler_( handler ),
     params_( data.params ),
@@ -118,7 +114,30 @@ FftCreator::update( FftData & new_data )
 TimeResult
 FftCreator::compute()
 {
-    return fft_->compute();
+    /* wrap in timestamps ... */
+
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t( now );
+    
+    std::stringstream date_start_ss;
+    date_start_ss << std::put_time( std::localtime( &in_time_t ), "%Y-%m-%d" );
+    std::string date_start = date_start_ss.str();
+
+    std::stringstream time_start_ss;
+    time_start_ss << std::put_time( std::localtime( &in_time_t ), "%X" );
+    std::string time_start = time_start_ss.str();
+
+    clock_t cpu_start_point = clock();
+
+    /* compute */
+
+    TimeResult t = fft_->compute();
+
+    t.cpu_start_point = cpu_start_point;
+    t.cpu_end_point = clock();
+    t.time = time_start;
+    t.date = date_start;
+    return t;
 }
 
 std::vector< std::complex< float > >

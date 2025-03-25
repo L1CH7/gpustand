@@ -5,6 +5,7 @@
 // #include <types.h>
 #include <IoJson.h>
 #include <error.h>
+// #include <HelperFunctions.h>
 
 
 struct ReadPathsTemplate
@@ -12,6 +13,7 @@ struct ReadPathsTemplate
     fs::path params_path;
     fs::path mseq_path;
     fs::path data_path;
+    fs::path ftps_path;
 };
 
 // template< typename Filter_Tp >
@@ -75,9 +77,13 @@ public:
 private:
     void readPushTwoPolars( fs::path testcase_path )
     {
+        std::stringstream info;
+        info << "reading: " << testcase_path.native() << std::endl;
+        std::cout << info.str();
         FftParams params = IoJson::readParams( testcase_path / this->paths_.params_path );
         std::vector< int > mseq = IoJson::readMseq( testcase_path / this->paths_.mseq_path );
         auto [polar0, polar1] = IoJson::readStrobe( testcase_path / this->paths_.data_path );
+        auto [verif0, verif1] = IoJson::readVerificationSeq( testcase_path / this->paths_.ftps_path, 3, params );
 
         FftData temp;
         temp.data_path = testcase_path;
@@ -85,21 +91,28 @@ private:
         temp.params = params;
         temp.mseq = mseq;
         temp.data_array = std::move( polar0 );
+        temp.verification = std::move( verif0 );
         push( std::move( temp ) );
-
+        
         temp.data_path = testcase_path;
         temp.polar = 1;
         temp.params = params;
         temp.mseq = std::move( mseq );
         temp.data_array = std::move( polar1 );
+        temp.verification = std::move( verif1 );
         push( std::move( temp ) );
     }
 
     void readPushTwoPolarsSplitKGRS( fs::path testcase_path, size_t step )
     {
+        std::stringstream info;
+        info << "reading: " << testcase_path.native() << std::endl;
+        std::cout << info.str();
         FftParams params = IoJson::readParams( testcase_path / this->paths_.params_path );
         std::vector< int > mseq = IoJson::readMseq( testcase_path / this->paths_.mseq_path );
         auto [polar0, polar1] = IoJson::readStrobe( testcase_path / this->paths_.data_path );
+        auto [verif0, verif1] = IoJson::readVerificationSeq( testcase_path / this->paths_.ftps_path, 3, params );
+
         for( uint kgrs = 1; kgrs <= params.kgrs; kgrs += step )
         {
             int n1grs = -1 * (int)kgrs / 2;
@@ -113,13 +126,15 @@ private:
             temp.params = copy_params;
             temp.mseq = mseq;
             temp.data_array = polar0;
+            temp.verification = verif0;
             push( std::move( temp ) );
-    
+            
             temp.data_path = testcase_path;
             temp.polar = 1;
             temp.params = copy_params;
             temp.mseq = mseq;
             temp.data_array = polar1;
+            temp.verification = verif1;
             push( std::move( temp ) );
             std::cout << focus_str("test splitkgrs read!\n");
         }

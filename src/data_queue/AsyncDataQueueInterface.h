@@ -43,16 +43,25 @@ public:
         return data;
     }
 
+    /**
+     * get_tasks_total() == get_tasks_queued() + get_tasks_running()
+     * returns true if queue has tasks queued or running
+     */
+    bool running() const
+    {
+        return pool_.get_tasks_total() != 0;
+    }
+
     bool empty() const override
     {
         std::scoped_lock< std::mutex > lock( queue_mutex_ );
         return this->q_.empty();
     }
 
-    bool stopped() //const
+    bool stopped() const
     {
-        std::scoped_lock< std::mutex > lock( queue_mutex_ );
-        stop_ = pool_.get_tasks_running() == 0;
+        // std::scoped_lock< std::mutex > lock( queue_mutex_ );
+        // stop_ = pool_.get_tasks_running() == 0;
         return stop_;
     }
 

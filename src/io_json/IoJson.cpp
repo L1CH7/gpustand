@@ -1,4 +1,5 @@
 #include "IoJson.h"
+#include <HelperFunctions.h>
 
 FftParams
 IoJson::readParams( const fs::path & file_path )
@@ -12,7 +13,7 @@ IoJson::readParams( const fs::path & file_path )
     json j = json::parse( ifs );
     ifs.close();
 
-    FftParams params(j);
+    FftParams params( j );
     
     params.shgd *= params.ndec;
     if( params.is_am )
@@ -41,9 +42,45 @@ IoJson::readStrobe( const fs::path & data_path )
     return readVectorFromJsonFile2Polars< std::complex< int > >( data_path );
 }
 
+
+std::pair< 
+    std::vector< std::vector< float > >, 
+    std::vector< std::vector< float > > 
+>
+IoJson::readVerificationSeq( const fs::path & ftps_path, const size_t N, const FftParams & params )
+{
+    // auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< float > >( ftps_path ); // won`t work because there not 2 polars, but NL rays + polars
+    std::ifstream ifs( ftps_path );
+    if( !ifs )
+    {
+        std::cerr << error_str( "Ftps file not opened" ) << std::endl;
+        throw;
+    }
+    json j = json::parse( ifs );
+    ifs.close();    
+    std::vector< std::complex< float > > polar0, polar1;
+    for( auto & [key, val] : j.items() )
+    {
+        std::string key_s = std::string( key );
+        if( key_s.find("Polar0") != std::string::npos )
+        {
+            std::vector< std::complex< float > > v( val );
+            polar0.insert( polar0.end(), v.begin(), v.end() );
+        }
+        else if( key_s.find("Polar1") != std::string::npos )
+        {
+            std::vector< std::complex< float > > v( val );
+            polar1.insert( polar1.end(), v.begin(), v.end() );
+        }
+    }    
+    auto elems0 = Helper::getFirstNMaxElemsPerNl( polar0, N, params );
+    auto elems1 = Helper::getFirstNMaxElemsPerNl( polar1, N, params );
+    return std::make_pair( std::move( elems0 ), std::move( elems1 ) );
+}
+
 // Report = times of one polar + params
 void
-IoJson::writeReport( const fs::path & file_path, const std::string & report_path, const uint8_t polar, const FftParams & params, const TimeResult & t )
+IoJson::writeReport( const fs::path & file_path, const FftReport & report )
 {
     std::ofstream ofs( file_path, std::ios::trunc );
     if (!ofs.is_open()) {
@@ -51,10 +88,17 @@ IoJson::writeReport( const fs::path & file_path, const std::string & report_path
         return;
     }
     json j;
-    j["report_path"]    = report_path;
-    j["polar"]          = polar;
-    j["params"]         = json( params );
-    j["time"]           = json( t );
+    j["report_path"]            = report.data_path;
+    j["polar"]                  = report.polar;
+    j["params"]                 = json( report.params );
+    j["time"]                   = json( report.time );
+    
+    json j_verif;
+    j_verif["verification"]     = report.verification;
+    j_verif["result_maximums"]  = report.out_maximums;
+    j_verif["is_data_valid"]    = ( int )report.is_data_valid;
+    j["verification"]           = j_verif;
+
     ofs << j.dump( 4 );
     ofs.close();
 }

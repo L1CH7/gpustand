@@ -18,3 +18,9 @@ apt install ocl-icd opencl-clhpp opencl-headers opencl-nvidia clinfo opencl-rust
     For reading buffers info:
     
         -D ENABLE_DEBUG_COMPUTATIONS=ON    
+
+
+### ToDo:
+верификация
+указать если время на тест больше планированного
+указать дату-время теста ДД-ММ-ГГ ЧЧ:ММ:СС.мсмсмсмс

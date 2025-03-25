@@ -21,6 +21,12 @@ namespace IoJson
     std::pair< std::vector< std::complex< int > >, std::vector< std::complex< int > > >
     readStrobe( const fs::path & data_path );
 
+    std::pair< 
+        std::vector< std::vector< float > >, 
+        std::vector< std::vector< float > > 
+    >
+    readVerificationSeq( const fs::path & ftps_path, const size_t N, const FftParams & params );
+
     template< typename T >
     std::vector< T >
     readVectorFromJsonFile( const fs::path & file_path )
@@ -48,8 +54,8 @@ namespace IoJson
     }
 
     void
-    writeReport( const fs::path & file_path, const std::string & report_path, const uint8_t polar, const FftParams & params, const TimeResult & t );
-
+    writeReport( const fs::path & file_path, const FftReport & report );
+    
     void
     writeFftResult( const fs::path & file_path, std::vector< std::complex< float > > & out_array, const uint8_t polar, const FftParams & params );
 };

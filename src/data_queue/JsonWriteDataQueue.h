@@ -31,8 +31,13 @@ public:
         auto task = [this, result_name, report_name]
         {
             auto r = pop();
+            
+            std::stringstream info;
+            info << "writing: " << report_name << std::endl;
+            std::cout << info.str();
+            IoJson::writeReport( r->report_dir / report_name, *r );
+            // we dont need to write results
             IoJson::writeFftResult( r->result_dir / result_name, r->out_array, r->polar, r->params );
-            IoJson::writeReport( r->report_dir / report_name, r->data_path, r->polar, r->params, r->time );
         };
         pool_.detach_task( task );
     }

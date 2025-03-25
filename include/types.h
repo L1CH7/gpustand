@@ -53,6 +53,7 @@ struct FftData
     FftParams params;
     std::vector< int > mseq;
     std::vector< std::complex< int > > data_array;
+    std::vector< std::vector< float > > verification;
 
     FftData() = default;
     FftData( const FftData & other ) = default;
@@ -61,16 +62,18 @@ struct FftData
         polar( other.polar ),
         params( other.params ),
         mseq( std::move( other.mseq ) ),
-        data_array( std::move( other.data_array ) )
+        data_array( std::move( other.data_array ) ),
+        verification( std::move( other.verification ) )
     {
     }
-
+    
     FftData( fs::path data_path, uint8_t polar, FftParams params, std::vector< int > & mseq, std::vector< std::complex< int > > & data_array )
     :   data_path( data_path ),
         polar( polar ),
         params( params ),
         mseq( std::move( mseq ) ),
-        data_array( std::move( data_array ) )
+        data_array( std::move( data_array ) ),
+        verification( std::move( verification ) )
     {
     }
 
@@ -84,6 +87,7 @@ struct FftData
         this->polar = other.polar;
         this->mseq = std::move( other.mseq );
         this->data_array = std::move( other.data_array );
+        this->verification = std::move( other.verification );
         return *this;
     }
 };
@@ -109,6 +113,8 @@ struct TimeResult
 
     uint64_t cpu_start_point;
     uint64_t cpu_end_point;
+    std::string date;
+    std::string time;
 };
 
 struct FftReport
@@ -118,6 +124,10 @@ struct FftReport
     size_t task_index;
     fs::path data_path;
     std::vector< std::complex< float > > out_array;
+    std::vector< std::vector< float > > verification;
+    std::vector< std::vector< float > > out_maximums;
+    bool is_data_valid;
+
     uint8_t polar;
     FftParams params;  
     TimeResult time;

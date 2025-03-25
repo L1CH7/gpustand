@@ -11,7 +11,8 @@ void testExecutionPool( std::shared_ptr< ProgramHandler > handler, fs::path root
     ReadPathsTemplate data_paths_template{
         .params_path = "in_args.json",
         .mseq_path = "tfpMSeqSigns.json",
-        .data_path = "out.json"
+        .data_path = "out.json",
+        .ftps_path = "ftps.json"
     };
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t( now );
@@ -29,17 +30,18 @@ void testExecutionPool( std::shared_ptr< ProgramHandler > handler, fs::path root
     };
     // auto rdq = std::make_shared< JsonReadDataQueue >( read_thread_num, testcases, data_paths_template );
     std::vector< fs::path > testcases_v;
-    testcases_v.push_back( testcases / "021");
-    testcases_v.push_back( testcases / "022");
-    testcases_v.push_back( testcases / "023");
-    // testcases_v.push_back( testcases / "006");
-    // testcases_v.push_back( testcases / "003");
+    // testcases_v.push_back( testcases / "021");
+    // testcases_v.push_back( testcases / "022");
+    // testcases_v.push_back( testcases / "023");
+    testcases_v.push_back( testcases / "006");
+    testcases_v.push_back( testcases / "005");
+    testcases_v.push_back( testcases / "000");
     auto rdq = std::make_shared< JsonReadDataQueue >( read_thread_num, testcases_v, data_paths_template );
     auto wdq = std::make_shared< JsonWriteDataQueue >( write_thread_num );
     ExecutionPool exec_pool{ handler, rdq, wdq, reports_template, computing_thread_num };
 
-    // rdq->startReading();
-    rdq->startReadingSplitKGRS( 14 );
+    rdq->startReading();
+    // rdq->startReadingSplitKGRS( 14 );
     rdq->wait();
     exec_pool.execute();
 }

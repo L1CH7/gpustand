@@ -1,4 +1,5 @@
 build
+.vscode/settings.json
 old_src
 result
 diffs.sh
