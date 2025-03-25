@@ -37,7 +37,7 @@ public:
             std::cout << info.str();
             IoJson::writeReport( r->report_dir / report_name, *r );
             // we dont need to write results
-            IoJson::writeFftResult( r->result_dir / result_name, r->out_array, r->polar, r->params );
+            // IoJson::writeFftResult( r->result_dir / result_name, r->out_array, r->polar, r->params );
         };
         pool_.detach_task( task );
     }

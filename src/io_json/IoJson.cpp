@@ -1,5 +1,7 @@
 #include "IoJson.h"
 #include <HelperFunctions.h>
+#include <regex>
+#include <string>
 
 FftParams
 IoJson::readParams( const fs::path & file_path )
@@ -42,6 +44,21 @@ IoJson::readStrobe( const fs::path & data_path )
     return readVectorFromJsonFile2Polars< std::complex< int > >( data_path );
 }
 
+std::pair< size_t, size_t > parseRayPolar( const std::string & str )
+{
+    std::regex pattern(R"(Ray(\d+)Polar(\d))");
+    std::smatch match;
+    
+    if( std::regex_match( str, match, pattern ) ) 
+    {
+        return 
+        {
+            std::stoi( match[1].str() ),  // Номер луча
+            std::stoi( match[2].str() )   // Номер поляризации
+        };
+    }
+    return { 0, 0 }; // Возврат по умолчанию при ошибке
+}
 
 std::pair< 
     std::vector< std::vector< float > >, 
@@ -49,33 +66,57 @@ std::pair<
 >
 IoJson::readVerificationSeq( const fs::path & ftps_path, const size_t N, const FftParams & params )
 {
-    // auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< float > >( ftps_path ); // won`t work because there not 2 polars, but NL rays + polars
-    std::ifstream ifs( ftps_path );
-    if( !ifs )
+    fs::path verification_path = ftps_path.parent_path() / "temp" / "verification.json";
+    if( fs::exists( verification_path ) )
     {
-        std::cerr << error_str( "Ftps file not opened" ) << std::endl;
-        throw;
+        std::ifstream ifs( verification_path );
+        if( !ifs )
+        {
+            std::cerr << error_str( "verification file exists but not opened" ) << std::endl;
+            throw;
+        }
+        json j = json::parse( ifs );
+        ifs.close();  
+        std::vector< std::vector< float > > elems0( j["polar0"] ), elems1( j["polar1"] );
+        return std::make_pair( std::move( elems0 ), std::move( elems1 ) );
     }
-    json j = json::parse( ifs );
-    ifs.close();    
-    std::vector< std::complex< float > > polar0, polar1;
-    for( auto & [key, val] : j.items() )
+    else
     {
-        std::string key_s = std::string( key );
-        if( key_s.find("Polar0") != std::string::npos )
+        // auto [ polar0, polar1 ] = readVectorFromJsonFile2Polars< std::complex< float > >( ftps_path ); // won`t work because there not 2 polars, but NL rays + polars
+        std::ifstream ifs( ftps_path );
+        if( !ifs )
         {
-            std::vector< std::complex< float > > v( val );
-            polar0.insert( polar0.end(), v.begin(), v.end() );
+            std::cerr << error_str( "Ftps file not opened" ) << std::endl;
+            throw;
         }
-        else if( key_s.find("Polar1") != std::string::npos )
+        json j = json::parse( ifs );
+        ifs.close();    
+        std::vector< std::vector< std::complex< float > > > polar0_m( params.nl ), polar1_m( params.nl );
+        std::vector< std::complex< float > > polar0, polar1;
+        for( auto & [key, val] : j.items() )
         {
-            std::vector< std::complex< float > > v( val );
-            polar1.insert( polar1.end(), v.begin(), v.end() );
-        }
-    }    
-    auto elems0 = Helper::getFirstNMaxElemsPerNl( polar0, N, params );
-    auto elems1 = Helper::getFirstNMaxElemsPerNl( polar1, N, params );
-    return std::make_pair( std::move( elems0 ), std::move( elems1 ) );
+            auto [ray, polar] = parseRayPolar( key );
+            std::string key_s = std::string( key );
+            if( polar == 0 )
+                polar0_m[ ray ] = val;
+            else if( polar == 1 )
+                polar1_m[ ray ] = val;
+        }    
+        for( auto v : polar0_m ) polar0.insert( polar0.end(), v.begin(), v.end() );
+        for( auto v : polar1_m ) polar1.insert( polar1.end(), v.begin(), v.end() );
+
+        auto elems0 = Helper::getFirstNMaxElemsPerNl( polar0, N, params );
+        auto elems1 = Helper::getFirstNMaxElemsPerNl( polar1, N, params );
+
+        json out;
+        out["polar0"] = elems0;
+        out["polar1"] = elems1;
+        fs::create_directories( verification_path.parent_path() );
+        std::ofstream ofs( verification_path );
+        ofs << out.dump( 4 );
+        ofs.close();
+        return std::make_pair( std::move( elems0 ), std::move( elems1 ) );
+    }
 }
 
 // Report = times of one polar + params
