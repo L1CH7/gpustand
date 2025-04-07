@@ -105,5 +105,40 @@ to_json( json & j, const TimeResult & t )
     j["time"] = t.time;
 }
 
+static void  
+from_json( const json & j, StrobeResPoint & point )
+{
+    point = StrobeResPoint{};
+    // point.
+    // j[point.nl].push_back( 
+    //     { 
+    //         { "kgd", point.kgd },
+    //         { "kgrs", point.kgrs },
+    //         { "value", point.value },
+    //     } 
+    // );
+    point.nl = j["nl"];
+    point.kgd = j["kgd"];
+    point.kgrs = j["kgrs"];
+    point.value = j["value"];
+}
+
+static void  
+to_json( json & j, const StrobeResPoint & point )
+{
+    // j["nl"] = point.nl;
+    // j[point.nl].push_back( 
+    // j["points"].push_back( 
+    //     { 
+    //         { "kgd", point.kgd },
+    //         { "kgrs", point.kgrs },
+    //         { "value", point.value },
+    //     } 
+    // );
+    j["nl"] = point.nl;
+    j["kgd"] = point.kgd;
+    j["kgrs"] = point.kgrs;
+    j["value"] = point.value;
+}
 
 #endif // JSON_HELPER_H__

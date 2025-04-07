@@ -15,9 +15,9 @@ FmFft::FmFft( std::shared_ptr< ProgramHandler > handler, FftData & data )
 TimeResult
 FmFft::compute()
 {
-    std::stringstream ss;
-    ss << "FmFft computing! Test:" << params_.test_name << std::endl;
-    std::cout << ss.str();
+    // std::stringstream ss;
+    // ss << "FmFft computing! Test:" << params_.test_name << std::endl;
+    // std::cout << ss.str();
     const uint32_t sinArrLen = 524288; //2^19
     uint32_t N = 1 << params_.log2N;
 

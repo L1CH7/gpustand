@@ -14,7 +14,8 @@ namespace fs = std::filesystem;
 
 
 
-struct DeviceIdentity {
+struct DeviceIdentity 
+{
     std::string device_name;
     std::string device_version;
     std::string platform_name;
@@ -46,6 +47,25 @@ struct FftParams
     std::string test_name;
 };
 
+// strobe_index = nl*KGD*KGRS + kgd*KGRS + kgrs
+struct StrobeResPoint
+{
+    size_t nl;
+    size_t kgd;
+    size_t kgrs;
+    float value;
+
+    StrobeResPoint() = default;
+
+    StrobeResPoint( size_t strobe_index, float value, FftParams params )
+    :   kgrs( strobe_index % params.kgrs ),
+        kgd( ( strobe_index / params.kgrs ) % params.kgd ),
+        nl( strobe_index / params.kgrs / params.kgd ),
+        value( value )
+    {
+    }
+};
+
 struct FftData
 {
     fs::path data_path;
@@ -53,7 +73,8 @@ struct FftData
     FftParams params;
     std::vector< int > mseq;
     std::vector< std::complex< int > > data_array;
-    std::vector< std::vector< float > > verification;
+    // std::vector< std::vector< float > > verification;
+    std::vector< StrobeResPoint > verification;
 
     FftData() = default;
     FftData( const FftData & other ) = default;
@@ -67,15 +88,15 @@ struct FftData
     {
     }
     
-    FftData( fs::path data_path, uint8_t polar, FftParams params, std::vector< int > & mseq, std::vector< std::complex< int > > & data_array )
-    :   data_path( data_path ),
-        polar( polar ),
-        params( params ),
-        mseq( std::move( mseq ) ),
-        data_array( std::move( data_array ) ),
-        verification( std::move( verification ) )
-    {
-    }
+    // FftData( fs::path data_path, uint8_t polar, FftParams params, std::vector< int > & mseq, std::vector< std::complex< int > > & data_array )
+    // :   data_path( data_path ),
+    //     polar( polar ),
+    //     params( params ),
+    //     mseq( std::move( mseq ) ),
+    //     data_array( std::move( data_array ) ),
+    //     verification( std::move( verification ) )
+    // {
+    // }
 
     FftData & operator=( const FftData & other ) = default;
     FftData & operator=( FftData && other )
@@ -124,8 +145,10 @@ struct FftReport
     size_t task_index;
     fs::path data_path;
     std::vector< std::complex< float > > out_array;
-    std::vector< std::vector< float > > verification;
-    std::vector< std::vector< float > > out_maximums;
+    // std::vector< std::vector< float > > verification;
+    // std::vector< std::vector< float > > out_maximums;
+    std::vector< StrobeResPoint > verification;
+    std::vector< StrobeResPoint > out_maximums;
     bool is_data_valid;
 
     uint8_t polar;

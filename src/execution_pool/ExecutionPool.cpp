@@ -46,6 +46,7 @@ void ExecutionPool::execute()
                 std::cerr << error_str("Invalid thread_id!\n");
                 return;
             }
+            // report.is_data_valid = false; // in case of error returns false by default
             try
             {
                 auto data = rdq_->pop();
@@ -66,10 +67,8 @@ void ExecutionPool::execute()
                 
                 report.time = fft_instances_[thread_id]->compute();
                 report.out_array = fft_instances_[thread_id]->getFftResult();
-                report.out_maximums = Helper::getFirstNMaxElemsPerNl( report.out_array, 3, report.params );
+                report.out_maximums = Helper::getFirstNMaxElemsPerNl_1( report.out_array, 3, report.params );
                 report.is_data_valid = Helper::isSimilarMatrix( report.verification, report.out_maximums, 1e-4 );
-
-                wdq_->writeData( std::move( report ) );
             }
             catch( const cl::Error & e )
             {
@@ -85,6 +84,7 @@ void ExecutionPool::execute()
                 std::cerr << error_str(e.what()) <<std::endl;
                 throw e;
             }
+            wdq_->writeData( std::move( report ) );
         };
         pool_.detach_task( task );
     }
@@ -94,20 +94,3 @@ void ExecutionPool::execute()
 
     pool_.wait();
 }
-
-// bool ExecutionPool::verificate( const std::vector< std::complex< float > > & data, const FftParams params )
-// {
-//     auto result_maximums = Helper::getFirstNMaxElemsPerNl( data, 3, params );
-//     auto verification_seq = result_maximums;
-//     // auto verification_seq = params.verification_seq; // ToDo
-//     if( result_maximums.size() != verification_seq.size() )
-//         return false;
-
-//     return std::is_permutation( 
-//         result_maximums.begin(), result_maximums.end(), 
-//         verification_seq.begin(), verification_seq.end(), 
-//         []( decltype( result_maximums )::value_type a, decltype( result_maximums )::value_type b ){
-//             return ( a - b );
-//         } 
-//     );
-// }

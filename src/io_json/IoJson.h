@@ -21,9 +21,13 @@ namespace IoJson
     std::pair< std::vector< std::complex< int > >, std::vector< std::complex< int > > >
     readStrobe( const fs::path & data_path );
 
+    // std::pair< 
+    //     std::vector< std::vector< float > >, 
+    //     std::vector< std::vector< float > > 
+    // >
     std::pair< 
-        std::vector< std::vector< float > >, 
-        std::vector< std::vector< float > > 
+        std::vector< StrobeResPoint >, 
+        std::vector< StrobeResPoint > 
     >
     readVerificationSeq( const fs::path & ftps_path, const size_t N, const FftParams & params );
 

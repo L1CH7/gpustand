@@ -46,7 +46,7 @@ IoJson::readStrobe( const fs::path & data_path )
 
 std::pair< size_t, size_t > parseRayPolar( const std::string & str )
 {
-    std::regex pattern(R"(Ray(\d+)Polar(\d))");
+    std::regex pattern( R"(Ray(\d+)Polar(\d))" );
     std::smatch match;
     
     if( std::regex_match( str, match, pattern ) ) 
@@ -61,9 +61,13 @@ std::pair< size_t, size_t > parseRayPolar( const std::string & str )
 }
 
 std::pair< 
-    std::vector< std::vector< float > >, 
-    std::vector< std::vector< float > > 
+    std::vector< StrobeResPoint >, 
+    std::vector< StrobeResPoint > 
 >
+// std::pair< 
+//     std::vector< std::vector< float > >, 
+//     std::vector< std::vector< float > > 
+// >
 IoJson::readVerificationSeq( const fs::path & ftps_path, const size_t N, const FftParams & params )
 {
     fs::path verification_path = ftps_path.parent_path() / "temp" / "verification.json";
@@ -77,7 +81,8 @@ IoJson::readVerificationSeq( const fs::path & ftps_path, const size_t N, const F
         }
         json j = json::parse( ifs );
         ifs.close();  
-        std::vector< std::vector< float > > elems0( j["polar0"] ), elems1( j["polar1"] );
+        std::vector< StrobeResPoint > elems0( j["polar0"] ), elems1( j["polar1"] );
+        // std::vector< std::vector< float > > elems0( j["polar0"] ), elems1( j["polar1"] );
         return std::make_pair( std::move( elems0 ), std::move( elems1 ) );
     }
     else
@@ -105,8 +110,8 @@ IoJson::readVerificationSeq( const fs::path & ftps_path, const size_t N, const F
         for( auto v : polar0_m ) polar0.insert( polar0.end(), v.begin(), v.end() );
         for( auto v : polar1_m ) polar1.insert( polar1.end(), v.begin(), v.end() );
 
-        auto elems0 = Helper::getFirstNMaxElemsPerNl( polar0, N, params );
-        auto elems1 = Helper::getFirstNMaxElemsPerNl( polar1, N, params );
+        auto elems0 = Helper::getFirstNMaxElemsPerNl_1( polar0, N, params );
+        auto elems1 = Helper::getFirstNMaxElemsPerNl_1( polar1, N, params );
 
         json out;
         out["polar0"] = elems0;
@@ -135,8 +140,15 @@ IoJson::writeReport( const fs::path & file_path, const FftReport & report )
     j["time"]                   = json( report.time );
     
     json j_verif;
-    j_verif["verification"]     = report.verification;
-    j_verif["result_maximums"]  = report.out_maximums;
+    if( report.verification.empty() )
+        j_verif["verification"]     = "empty";
+    else
+        j_verif["verification"]     = report.verification;
+    if( report.out_maximums.empty() )
+        j_verif["verification"]     = "empty";
+    else
+        j_verif["result_maximums"]  = report.out_maximums;
+        
     j_verif["is_data_valid"]    = ( int )report.is_data_valid;
     j["verification"]           = j_verif;
 

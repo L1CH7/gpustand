@@ -117,6 +117,7 @@ FftCreator::compute()
     /* wrap in timestamps ... */
 
     auto now = std::chrono::system_clock::now();
+    auto ms = std::chrono::duration_cast< std::chrono::milliseconds >( now.time_since_epoch() ) % 1000;
     auto in_time_t = std::chrono::system_clock::to_time_t( now );
     
     std::stringstream date_start_ss;
@@ -124,7 +125,7 @@ FftCreator::compute()
     std::string date_start = date_start_ss.str();
 
     std::stringstream time_start_ss;
-    time_start_ss << std::put_time( std::localtime( &in_time_t ), "%X" );
+    time_start_ss << std::put_time( std::localtime( &in_time_t ), "%X." ) << ms.count();
     std::string time_start = time_start_ss.str();
 
     clock_t cpu_start_point = clock();

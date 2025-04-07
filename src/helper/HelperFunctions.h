@@ -22,11 +22,27 @@ namespace Helper
         const FftParams & params 
     );
 
+    std::vector< StrobeResPoint >
+    getFirstNMaxElemsPerNl_1
+    ( 
+        const std::vector< std::complex< float > > & data, 
+        const size_t N, 
+        const FftParams & params 
+    );
+
     bool 
     isSimilarMatrix
     ( 
         const std::vector< std::vector< float > > & a, 
         const std::vector< std::vector< float > > & b,
+        const float eps
+    );
+
+    bool 
+    isSimilarMatrix
+    ( 
+        const std::vector< StrobeResPoint > & a, 
+        const std::vector< StrobeResPoint > & b,
         const float eps
     );
 }
