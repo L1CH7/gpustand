@@ -5,7 +5,8 @@ include_directories(
     fft
     data_queue
     execution_pool
-    helper
+    # helper
+    data_hasher
 )
 
 add_subdirectory(io_json)
@@ -13,12 +14,13 @@ add_subdirectory(gpu)
 add_subdirectory(fft)
 add_subdirectory(tests)
 add_subdirectory(execution_pool)
-add_subdirectory(helper)
+# add_subdirectory(helper)
+add_subdirectory(data_hasher)
 
 add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
-    main.cpp
+    main.cxx
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -27,6 +29,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     gpu
     fft
     execution_pool
-    helper_functions
+    data_hasher
+    # helper_functions
     OpenCL::OpenCL
 )

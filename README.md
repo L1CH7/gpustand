@@ -11,13 +11,7 @@ apt install ocl-icd opencl-clhpp opencl-headers opencl-nvidia clinfo opencl-rust
 ## Configuring
 1.  Open configure.sh
 2.  Set these options in cmake command (ON/OFF):
-    
-    For time prifiling:
-
-        -D ENABLE_TIME_PROFILING=ON
-    For reading buffers info:
-    
-        -D ENABLE_DEBUG_COMPUTATIONS=ON    
+       
 
 
 ### ToDo:

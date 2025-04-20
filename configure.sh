@@ -8,6 +8,8 @@ if command -v ccache &> /dev/null; then
     export CMAKE_C_COMPILER_LAUNCHER="ccache"; 
 fi
 
+export CMAKE_BUILD_PARALLEL_LEVEL=#threads
+
 CMAKE_CXX_COMPILER="x86_64-linux-gnu-g++"
 
 # CMAKE_CXX_FLAGS="-pipe -O2 -funroll-loops -Wall -Wextra -Wformat=0 -Wmaybe-uninitialized"
@@ -23,14 +25,16 @@ BUILD_DIR="build"
 # fi
 
 mkdir -p "$BUILD_DIR"
+if command -v ninja &> /dev/null; then 
+    CMAGE_GEN="-G Ninja"
+else
+    CMAGE_GEN=""
+fi
 
-cmake 	-G Ninja -B "$BUILD_DIR" -S "${fullpath}" 								\
+cmake 	$CMAGE_GEN -B $BUILD_DIR -S "${fullpath}" 								\
 		-D CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS" 							\
 		-D CMAKE_CXX_COMPILER="$CMAKE_CXX_COMPILER" 					\
         -D CMAKE_BUILD_TYPE=debug									    \
-        # -D ENABLE_DEBUG_COMPUTATIONS=ON                                 \
-        # -D ENABLE_TIME_PROFILING=ON                                     \
-
 
 if [ $? -eq 0 ]; then
     echo "CMake успешно запущен"
@@ -39,5 +43,8 @@ else
     exit 1
 fi
 
-# make -C "$BUILD_DIR" -j12
-ninja -C "$BUILD_DIR" -j12
+if command -v ninja &> /dev/null; then 
+    ninja -C "$BUILD_DIR" -j12
+else
+    make -C "$BUILD_DIR" -j12
+fi

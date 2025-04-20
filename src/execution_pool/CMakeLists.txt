@@ -1,5 +1,5 @@
 set(EXECUTION_POOL_SOURCES
-    ExecutionPool.cpp
+    ExecutionPool.cxx
 )
 
 add_library(execution_pool ${EXECUTION_POOL_SOURCES})

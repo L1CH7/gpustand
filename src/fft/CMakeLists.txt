@@ -1,8 +1,8 @@
 set(FFT_SOURCES
-    GpuFourier.cpp
-    AmFft.cpp
-    FmFft.cpp
-    FmFftSepNl.cpp
+    GpuFourier.cxx
+    AmFft.cxx
+    FmFft.cxx
+    FmFftSepNl.cxx
 )
 
 add_library(fft ${FFT_SOURCES})

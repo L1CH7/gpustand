@@ -1,6 +1,6 @@
 set(GPU_SOURCES
-    ProgramHandler.cpp
-    GpuInit.cpp
+    ProgramHandler.cxx
+    GpuInit.cxx
 )
 
 add_library(gpu ${GPU_SOURCES})

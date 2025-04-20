@@ -1,5 +1,5 @@
 set(TESTING_SOURCES
-    tests.cpp
+    tests.cxx
 )
 
 add_library(tests ${TESTING_SOURCES})
