@@ -39,8 +39,3 @@ static void to_json( json & j, const FftReport & report )
     j_verif["is_data_valid"]    = ( int )report.accurate_result;
     j["verification"]           = j_verif;
 }
-
-// static void from_json( const json & j, FftReport & report )
-// {
-
-// }

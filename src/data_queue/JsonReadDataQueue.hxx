@@ -8,7 +8,6 @@
 #include <StrobeHash.hxx>
 #include <IoJson.hxx>
 #include <error.hxx>
-// #include <HelperFunctions.hxx>
 
 
 struct ReadPathsTemplate
@@ -50,7 +49,7 @@ public:
                 throw std::runtime_error( "one of testcases_vector paths is invalid" );
     }
 
-    void startReading()
+    void startReading() override
     {
         this->resume();
         for( auto testcase : testcases_vector_ )
@@ -80,9 +79,6 @@ public:
 private:
     void readPushTwoPolars( fs::path testcase_path )
     {
-        std::stringstream info;
-        info << "reading: " << testcase_path.native() << std::endl;
-        std::cout << info.str();
         FftParams params = IoJson::readParams( testcase_path / this->paths_.params_path );
         std::vector< int > mseq = IoJson::readMseq( testcase_path / this->paths_.mseq_path );
         auto [polar0, polar1] = IoJson::readStrobe( testcase_path / this->paths_.data_path );
@@ -106,6 +102,10 @@ private:
         temp.data_array = std::move( polar1 );
         temp.verification = makeDataHashWrapper( verif1, params, num_maximums, eps );
         push( std::move( temp ) );
+
+        std::stringstream info;
+        info << "readed: " << testcase_path.native() << std::endl;
+        std::cout << info.str();
     }
 
     void readPushTwoPolarsSplitKGRS( fs::path testcase_path, size_t step )
@@ -131,7 +131,9 @@ private:
             temp.params = copy_params;
             temp.mseq = mseq;
             temp.data_array = polar0;
-            // temp.verification = verif0;
+            size_t num_maximums = 3;
+            float eps = .1;
+            temp.verification = makeDataHashWrapper( verif0, params, num_maximums, eps );
             push( std::move( temp ) );
             
             temp.data_path = testcase_path;
@@ -139,7 +141,7 @@ private:
             temp.params = copy_params;
             temp.mseq = mseq;
             temp.data_array = polar1;
-            // temp.verification = verif1;
+            temp.verification = makeDataHashWrapper( verif1, params, num_maximums, eps );
             push( std::move( temp ) );
             std::cout << focus_str("test splitkgrs read!\n");
         }

@@ -6,7 +6,7 @@
 
 struct FftParams
 {
-    bool is_am;
+    uint is_am; // bool that represented in <0,1> not handling by JSON
 
     uint nl;
     int n1grs;

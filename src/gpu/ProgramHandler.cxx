@@ -52,7 +52,6 @@ ProgramHandler::initializeDeviceWithKernelFile( const fs::path & kernel_path )
     return error;
 }
 
-
 std::shared_ptr< ProgramHandler >
 makeProgramHandler( size_t platform_num, size_t device_num, std::string & error )
 {

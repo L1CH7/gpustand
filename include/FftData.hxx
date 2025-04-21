@@ -16,7 +16,6 @@ struct FftData
     FftParams params;
     std::vector< int > mseq;
     std::vector< std::complex< int > > data_array;
-    // std::vector< std::vector< float > > verification;
     DataHashWrapper verification;
 
     FftData() = default;
@@ -34,8 +33,6 @@ struct FftData
     FftData & operator=( const FftData & other ) = default;
     FftData & operator=( FftData && other )
     {
-        // FftData temp{ std::move( other ) };
-        // return temp;
         this->data_path = other.data_path;
         this->params = other.params;
         this->polar = other.polar;

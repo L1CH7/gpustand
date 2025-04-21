@@ -37,7 +37,6 @@ to_json( json & j, const TimeResult & t )
     {
         json stamp;
         double start, end, duration; // in milliseconds
-        // double ms_inv = 1000000.;
 
         start = static_cast< double >( _start ) / dividor;
         end = static_cast< double >( _end ) / dividor;
@@ -64,8 +63,6 @@ to_json( json & j, const TimeResult & t )
     }
     j["fft"] = get_stamps( t.fft_start, t.fft_end, gpu_dividor );
     j["read_data"] = get_stamps( t.read_start, t.read_end, gpu_dividor );
-    // j["cpu_start_point"] = static_cast< double >( t.cpu_start_point ) / 1000.;
-    // j["cpu_end_point"] = static_cast< double >( t.cpu_end_point ) / 1000.;
     j["cpu_testing_time"] = get_stamps( t.cpu_start_point, t.cpu_end_point, cpu_dividor );
     j["date"] = t.date;
     j["time"] = t.time;

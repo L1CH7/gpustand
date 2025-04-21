@@ -6,8 +6,9 @@ StrobeHash::StrobeHash( const StrobeTp & data, const FftParams & params, const s
 :   eps_( eps ),
     hash_( params.nl )
 {
-    // hashify();
-    /* data array represents matrix NL*kgd*kgrs, we need to get N=3 max elements for each NL */
+    /**
+     * data array represents matrix NL*kgd*kgrs, we need to get N=3 max elements for each NL 
+     */
     size_t nl = params.nl;
     size_t kgd = params.kgd;
     size_t kgrs = params.kgrs;
@@ -82,8 +83,6 @@ bool StrobeHash::equalTo( const IHash & other ) const
 
 void StrobeHash::to_json( json & j ) const 
 {
-    // j["hash_type"] = "StrobeHash";
-    // j["hash"] = hash_;
     j = hash_;
 }
 

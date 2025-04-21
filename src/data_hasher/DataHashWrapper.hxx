@@ -46,11 +46,7 @@ public:
      */
     DataHashWrapper( std::unique_ptr< BaseTp > && p ) 
     :   impl_( std::move( p ) ) 
-    {
-        // static_assert( std::is_base_of< BaseTp, impl_::value >::value,
-            // "DerivedTp должен наследоваться от BaseType" );
-        std::cout << "from unique c-tor!\n";
-    }
+    {}
 
     /**
      * Copy c-tor creates empty implementation
@@ -127,6 +123,5 @@ makeDataHashWrapper( Args... args )
     static_assert( std::is_base_of< DataHashWrapper::BaseTp, DataHashWrapper::DerivedTp >::value,
         "DerivedTp должен наследоваться от BaseType" );
     
-    std::cout << "variate maker!\n";
     return DataHashWrapper{ std::make_unique< DataHashWrapper::DerivedTp >( std::forward< Args >( args )... ) };
 }

@@ -21,10 +21,6 @@ struct ProgramHandler
     const std::shared_ptr< cl::Device >     device;
     std::shared_ptr< cl::Context >          context;
     std::shared_ptr< cl::Program >          program;
-    // cl::Platform    * const platform;
-    // cl::Device      * const device;
-    // cl::Context     * context;
-    // cl::Program     * program;
 
     ProgramHandler( const std::shared_ptr< cl::Platform > & platform_, const std::shared_ptr< cl::Device > & device_ );
 

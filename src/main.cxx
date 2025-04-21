@@ -54,15 +54,12 @@ int main( int argc, char ** argv )
 
     size_t hardware_concurrency = std::thread::hardware_concurrency();
     size_t read_thread_num = 6;
-    size_t computing_thread_num = 4;
+    size_t computing_thread_num = 1;
     size_t write_thread_num = 5;
 
     std::shared_ptr< ProgramHandler > handler = Prepare( argc, argv, root_dir / "src/fft/GpuKernels.cl" );
     if( !handler )
         exit( 1 );
-    {
-        // RunAllTests( handler, root_dir, 10, 1, 1 );
-    }
     {
         testExecutionPool( handler, root_dir, read_thread_num, computing_thread_num, write_thread_num );
     }

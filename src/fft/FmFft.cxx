@@ -206,7 +206,6 @@ FmFft::compute()
         .fm_data_fft_start      = eventArray[5].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
         .fm_data_fft_end        = eventArray[6].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
         .fft_start              = eventArray[3].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
-        // .fft_start              = eventArray[7].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
         .fft_end                = eventArray[9].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
         .read_start             = eventArray[10].getProfilingInfo<CL_PROFILING_COMMAND_START>(),
         .read_end               = eventArray[10].getProfilingInfo<CL_PROFILING_COMMAND_END>(),
