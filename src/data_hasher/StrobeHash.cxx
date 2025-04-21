@@ -1,6 +1,7 @@
 #include <StrobeHash.hxx>
 
 #include <algorithm>
+#include <iostream>
 
 StrobeHash::StrobeHash( const StrobeTp & data, const FftParams & params, const size_t num_maximums, const Generic eps )
 :   eps_( eps ),
@@ -70,7 +71,16 @@ bool StrobeHash::equalTo( const IHash & other ) const
             other_hash.at( nl ).begin(), other_hash.at( nl ).end(), 
             [this]( const StrobePoint & a, const StrobePoint & b )
             {
-                return  std::abs( a.value - b.value ) * eps_ < 1.f
+                /**
+                 * Comparing two numbers by ratio:
+                 * diff = |a - b|
+                 * avg = (a + b) / 2
+                 * ratio = diff / avg
+                 */
+                EpsTp ratio = 2.f * std::abs( a.value - b.value ) / ( a.value + b.value );
+                // if(!(ratio < eps_))
+                    // std::cout << "ratio: " << ratio << " >= " << eps_ << std::endl;
+                return  ratio < eps_
                         && a.kgd == b.kgd
                         && a.kgrs == b.kgrs;
             } 

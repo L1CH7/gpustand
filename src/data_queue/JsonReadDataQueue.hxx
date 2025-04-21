@@ -132,7 +132,7 @@ private:
             temp.mseq = mseq;
             temp.data_array = polar0;
             size_t num_maximums = 3;
-            float eps = .1;
+            float eps = .1; // 10%
             temp.verification = makeDataHashWrapper( verif0, params, num_maximums, eps );
             push( std::move( temp ) );
             

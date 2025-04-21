@@ -1,8 +1,5 @@
 build
 .vscode/settings.json
-old_src
-result
-diffs.sh
 
 testcases
 reports
@@ -11,5 +8,3 @@ reports
 data
 venv
 __pycache__
-
-tests
